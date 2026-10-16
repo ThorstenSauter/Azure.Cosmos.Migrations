@@ -6,6 +6,7 @@
     <VersionPrefix>0.1.0</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>azure;cosmos;cosmosdb;migrations;database</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
@@ -35,6 +36,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="ThorstenSauter.Azure.Cosmos.Migrations.Tests" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../assets/icon.png" Pack="true" PackagePath="/" />
     <!-- Consumers' migrations projects get a runtimeconfig.json, which the tool needs to run them. -->
     <None Include="buildTransitive/ThorstenSauter.Azure.Cosmos.Migrations.props" Pack="true" PackagePath="buildTransitive/" />
   </ItemGroup>

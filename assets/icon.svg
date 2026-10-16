@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Versioned migrations: a database cylinder and an arrow moving it up a version. -->
+  <rect width="128" height="128" rx="24" fill="#24346B"/>
+  <!-- Cylinder: body, bottom cap, top cap -->
+  <g fill="#FFFFFF">
+    <rect x="22" y="34" width="52" height="58"/>
+    <ellipse cx="48" cy="92" rx="26" ry="9"/>
+    <ellipse cx="48" cy="34" rx="26" ry="9"/>
+  </g>
+  <!-- Rim of the top cap and the bands between stored versions -->
+  <g fill="none" stroke="#24346B" stroke-width="4" stroke-linecap="round">
+    <path d="M24 36 A24 8 0 0 0 72 36"/>
+    <path d="M24 56 A24 8 0 0 0 72 56"/>
+    <path d="M24 75 A24 8 0 0 0 72 75"/>
+  </g>
+  <!-- Up arrow: apply the next migration -->
+  <g fill="#FFFFFF">
+    <rect x="93" y="50" width="10" height="46" rx="2.5"/>
+    <path d="M98 30 L114 54 L82 54 Z" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+</svg>

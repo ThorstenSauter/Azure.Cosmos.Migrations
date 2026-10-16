@@ -12,6 +12,7 @@
     <RollForward>Major</RollForward>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>azure;cosmos;cosmosdb;migrations;database;dotnet-tool</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -47,6 +48,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="ThorstenSauter.Azure.Cosmos.Migrations.Tests" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../assets/icon.png" Pack="true" PackagePath="/" />
   </ItemGroup>
 
 </Project>
