@@ -1,0 +1,75 @@
+#nullable enable
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.Client.get -> Microsoft.Azure.Cosmos.CosmosClient!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.CosmosMigration() -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.Database.get -> Microsoft.Azure.Cosmos.Database!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.DatabaseName.get -> string!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.ContainerName.get -> string!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.ContainerName.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.CosmosMigrationOptions() -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.DatabaseName.get -> string!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.DatabaseName.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.LeaseDuration.get -> System.TimeSpan
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.LeaseDuration.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.LockPollInterval.get -> System.TimeSpan
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.LockPollInterval.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.LockTimeout.get -> System.TimeSpan
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.LockTimeout.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner.CosmosMigrationRunner(Microsoft.Azure.Cosmos.CosmosClient! client, ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions! options, System.Collections.Generic.IEnumerable<ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration!>! migrations, Microsoft.Extensions.Logging.ILogger<ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner!>? logger = null, System.TimeProvider? timeProvider = null) -> void
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner.GetStatusAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<ThorstenSauter.Azure.Cosmos.Migrations.MigrationState!>!>!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner.MigrateAsync(string? target = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult!>!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner.Migrations.get -> System.Collections.Generic.IReadOnlyList<ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration!>!
+ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner.RollbackAsync(string? target = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult!>!
+ThorstenSauter.Azure.Cosmos.Migrations.Design.MigrationsCommandExecutor
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationLockException
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationLockException.MigrationLockException() -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationLockException.MigrationLockException(string! message) -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationLockException.MigrationLockException(string! message, System.Exception! innerException) -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.<Clone>$() -> ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult!
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Completed.get -> System.Collections.Generic.IReadOnlyList<string!>!
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Completed.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Deconstruct(out System.Collections.Generic.IReadOnlyList<string!>! Completed, out string? FailedMigrationId, out System.Exception? Error) -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Equals(ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult? other) -> bool
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Error.get -> System.Exception?
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Error.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.FailedMigrationId.get -> string?
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.FailedMigrationId.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.MigrationResult(System.Collections.Generic.IReadOnlyList<string!>! Completed, string? FailedMigrationId = null, System.Exception? Error = null) -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Succeeded.get -> bool
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.<Clone>$() -> ThorstenSauter.Azure.Cosmos.Migrations.MigrationState!
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.AppliedAt.get -> System.DateTime?
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.AppliedAt.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Deconstruct(out string! Id, out string! Description, out System.DateTime? AppliedAt) -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Description.get -> string!
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Description.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Equals(ThorstenSauter.Azure.Cosmos.Migrations.MigrationState? other) -> bool
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Id.get -> string!
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Id.init -> void
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.IsApplied.get -> bool
+ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.MigrationState(string! Id, string! Description, System.DateTime? AppliedAt) -> void
+abstract ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.Description.get -> string!
+abstract ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.DownAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+abstract ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.Id.get -> string!
+abstract ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.UpAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+const ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.DefaultContainerName = "migrations" -> string!
+const ThorstenSauter.Azure.Cosmos.Migrations.Design.MigrationsCommandExecutor.ConnectionStringVariable = "COSMOS_MIGRATIONS_CONNECTION_STRING" -> string!
+const ThorstenSauter.Azure.Cosmos.Migrations.Design.MigrationsCommandExecutor.DatabaseVariable = "COSMOS_MIGRATIONS_DATABASE" -> string!
+override ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.Equals(object? obj) -> bool
+override ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.GetHashCode() -> int
+override ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.ToString() -> string!
+override ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.Equals(object? obj) -> bool
+override ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.GetHashCode() -> int
+override ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.ToString() -> string!
+static ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration.QueryAllAsync<T>(Microsoft.Azure.Cosmos.Container! container, Microsoft.Azure.Cosmos.QueryDefinition! query, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IAsyncEnumerable<T>!
+static ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.DefaultLeaseDuration.get -> System.TimeSpan
+static ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationOptions.DefaultLockTimeout.get -> System.TimeSpan
+static ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigrationRunner.DiscoverMigrations(System.Reflection.Assembly! assembly) -> System.Collections.Generic.IReadOnlyList<ThorstenSauter.Azure.Cosmos.Migrations.CosmosMigration!>!
+static ThorstenSauter.Azure.Cosmos.Migrations.Design.MigrationsCommandExecutor.RunAsync(System.Reflection.Assembly! migrationsAssembly, System.Collections.Generic.IReadOnlyList<string!>! args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+static ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.operator !=(ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult? left, ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult? right) -> bool
+static ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult.operator ==(ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult? left, ThorstenSauter.Azure.Cosmos.Migrations.MigrationResult? right) -> bool
+static ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.operator !=(ThorstenSauter.Azure.Cosmos.Migrations.MigrationState? left, ThorstenSauter.Azure.Cosmos.Migrations.MigrationState? right) -> bool
+static ThorstenSauter.Azure.Cosmos.Migrations.MigrationState.operator ==(ThorstenSauter.Azure.Cosmos.Migrations.MigrationState? left, ThorstenSauter.Azure.Cosmos.Migrations.MigrationState? right) -> bool

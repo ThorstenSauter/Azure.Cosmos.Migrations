@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Versioned, reversible migrations for Azure Cosmos DB (NoSQL): ordered C# migrations, an applied-migrations container and a lease lock, run with the dotnet-cosmos-migrations tool.</Description>
+    <PackageId>ThorstenSauter.Azure.Cosmos.Migrations</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>azure;cosmos;cosmosdb;migrations;database</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Checks the package against NuGet's compatibility rules; set PackageValidationBaselineVersion after the first stable release. -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <!-- The Cosmos SDK requires a direct Newtonsoft.Json reference; consumers inherit it from this package. -->
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <!-- Embeds an SPDX 3.0.1 SBOM at _manifest/spdx_3.0/manifest.spdx.json, built from packages.lock.json. -->
+    <PackageReference Include="Sbom" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Public API baseline: new or changed public members fail the build (RS0016/RS0017) until recorded here. -->
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ThorstenSauter.Azure.Cosmos.Migrations.Tests" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <!-- Consumers' migrations projects get a runtimeconfig.json, which the tool needs to run them. -->
+    <None Include="buildTransitive/ThorstenSauter.Azure.Cosmos.Migrations.props" Pack="true" PackagePath="buildTransitive/" />
+  </ItemGroup>
+
+</Project>

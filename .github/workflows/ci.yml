@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            emulator-tests: 'true'
+          # Windows runners only run Windows containers and the Cosmos DB emulator is a Linux image, so this leg
+          # covers the unit tests; the emulator and tool end-to-end tests run on Ubuntu.
+          - os: windows-latest
+            emulator-tests: 'false'
+    env:
+      COSMOS_EMULATOR_TESTS: ${{ matrix.emulator-tests }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build solution and run tests
+        uses: ThorstenSauter/dotnet-actions/build-and-test@be6b6794832821fbad29da607b6ac88e9c74ffdf # v4.1.0
+
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes
+
+  pack:
+    name: Pack
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Pack without publishing
+        uses: ThorstenSauter/dotnet-actions/pack-and-publish@be6b6794832821fbad29da607b6ac88e9c74ffdf # v4.1.0
+        with:
+          # The solution packs both packages: the library and the tool.
+          project-path: 'Azure.Cosmos.Migrations.slnx'
+          publish: 'false'
+          version: '0.0.0-ci.${{ github.run_number }}'
+
+  # The only check the "main" ruleset requires, so new jobs only need adding to `needs`.
+  # `always()` matters: without it a failed dependency would skip this job too, and GitHub counts a
+  # skipped required check as passed.
+  checks-passed:
+    name: CI passed
+    runs-on: ubuntu-slim
+    needs: [ build, format, pack ]
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: Fail if a check failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "::error::At least one check failed, was cancelled or was skipped."
+          echo "$RESULTS"
+          exit 1
+      - name: All checks passed
+        run: echo "Every check passed."

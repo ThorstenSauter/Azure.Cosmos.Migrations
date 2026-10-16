@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      dotnet-cosmos-migrations runs a project's migrations through `dotnet exec` with the project's runtimeconfig.json.
+      The SDK only writes that file for executables, so a class library holding migrations asks for it here.
+    -->
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+</Project>

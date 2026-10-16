@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Authors>Thorsten Sauter</Authors>
+    <Copyright>Copyright (c) 2026 Thorsten Sauter</Copyright>
+    <PackageProjectUrl>https://github.com/ThorstenSauter/Azure.Cosmos.Migrations</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ThorstenSauter/Azure.Cosmos.Migrations</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <!-- Reproducible restores: packages.lock.json is committed and CI (CI=true on GitHub Actions) refuses to change it. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Command-line tool for ThorstenSauter.Azure.Cosmos.Migrations: apply, roll back, list and scaffold Azure Cosmos DB migrations (dotnet cosmos-migrations).</Description>
+    <OutputType>Exe</OutputType>
+    <PackageId>ThorstenSauter.Azure.Cosmos.Migrations.Tool</PackageId>
+    <AssemblyName>dotnet-cosmos-migrations</AssemblyName>
+    <RootNamespace>ThorstenSauter.Azure.Cosmos.Migrations.Tool</RootNamespace>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-cosmos-migrations</ToolCommandName>
+    <RollForward>Major</RollForward>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>azure;cosmos;cosmosdb;migrations;database;dotnet-tool</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Source generator only; nothing ships at runtime. -->
+    <PackageReference Include="ConsoleAppFramework" PrivateAssets="all" />
+    <!-- Embeds an SPDX 3.0.1 SBOM at _manifest/spdx_3.0/manifest.spdx.json, built from packages.lock.json. -->
+    <PackageReference Include="Sbom" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The tool itself never loads the library: it re-executes cosmos-migrations-exec inside the migrations project's
+      dependency context. Build the executable first and ship only its DLL under exec/.
+    -->
+    <ProjectReference Include="../ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec/ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="ExecAssembly" />
+  </ItemGroup>
+
+  <!-- Takes the built path from the reference, so it works with any output layout (e.g. ArtifactsPath in CI). -->
+  <Target Name="IncludeExecAssembly" AfterTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <ContentWithTargetPath Include="@(ExecAssembly)"
+                             TargetPath="exec/%(Filename)%(Extension)"
+                             CopyToOutputDirectory="PreserveNewest"
+                             CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ThorstenSauter.Azure.Cosmos.Migrations.Tests" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

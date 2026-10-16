@@ -1,0 +1,9 @@
+bin/
+obj/
+artifacts/
+coverage/
+coveragereport/
+TestResults/
+*.user
+.vs/
+.idea/

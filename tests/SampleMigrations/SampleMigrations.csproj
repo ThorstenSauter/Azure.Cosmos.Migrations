@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A migrations class library as a consumer would write it, used by the tests. It references the library as a project,
+    so NuGet's buildTransitive import doesn't happen; importing the props by hand keeps them under test.
+  -->
+  <Import Project="../../src/ThorstenSauter.Azure.Cosmos.Migrations/buildTransitive/ThorstenSauter.Azure.Cosmos.Migrations.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/ThorstenSauter.Azure.Cosmos.Migrations/ThorstenSauter.Azure.Cosmos.Migrations.csproj" />
+  </ItemGroup>
+
+</Project>

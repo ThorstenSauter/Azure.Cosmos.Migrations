@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ThorstenSauter.Azure.Cosmos.Migrations/ThorstenSauter.Azure.Cosmos.Migrations.csproj" />
+    <Project Path="src/ThorstenSauter.Azure.Cosmos.Migrations.Tool/ThorstenSauter.Azure.Cosmos.Migrations.Tool.csproj" />
+    <Project Path="src/ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec/ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SampleMigrations/SampleMigrations.csproj" />
+    <Project Path="tests/ThorstenSauter.Azure.Cosmos.Migrations.Tests/ThorstenSauter.Azure.Cosmos.Migrations.Tests.csproj" />
+  </Folder>
+</Solution>

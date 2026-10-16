@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Runs inside a migrations project's dependency context: the tool starts it with
+    `dotnet exec \-\-depsfile <project>.deps.json \-\-runtimeconfig <project>.runtimeconfig.json`. Only this DLL ships (in
+    the tool package's exec/ folder); every dependency, including the library, comes from the migrations project, so it
+    must reference nothing but the library.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>cosmos-migrations-exec</AssemblyName>
+    <RootNamespace>ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../ThorstenSauter.Azure.Cosmos.Migrations/ThorstenSauter.Azure.Cosmos.Migrations.csproj" />
+  </ItemGroup>
+
+</Project>
