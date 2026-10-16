@@ -79,11 +79,16 @@ public sealed class CosmosMigrationRunner
     ///     Applies every pending migration in order, or those up to and including <paramref name="target" />. Stops at
     ///     the first failure; migrations applied before it stay applied.
     /// </summary>
-    /// <param name="target">The last migration ID to apply, or <see langword="null" /> to apply all.</param>
+    /// <param name="target">
+    ///     The last migration to apply, or <see langword="null" /> to apply all: its ID, or for an EF-style ID
+    ///     (<c>20261016213045_OrdersAddDeletedAt</c>) just its timestamp or its name.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Which migrations were applied and, on failure, why the run stopped.</returns>
+    /// <exception cref="ArgumentException"><paramref name="target" /> matches several migrations.</exception>
     public async Task<MigrationResult> MigrateAsync(string? target = null, CancellationToken cancellationToken = default)
     {
+        target = ResolveTarget(_migrations, target);
         if (target is not null)
         {
             _logger.LogMigratingUpTo(target);
@@ -93,17 +98,26 @@ public sealed class CosmosMigrationRunner
             async (store, lease, token) =>
             {
                 var applied = await store.GetAppliedAsync(token);
-                var pending = SelectPending(_migrations, applied.Keys.ToHashSet(StringComparer.Ordinal), target);
+                var appliedIds = applied.Keys.ToHashSet(StringComparer.Ordinal);
+                var pending = SelectPending(_migrations, appliedIds, target);
                 if (pending.Count == 0)
                 {
                     _logger.LogNoPendingMigrations();
                     return new MigrationResult([]);
                 }
 
+                // A migration from a branch merged after a later one was already applied: it still runs, but say so.
+                var lastApplied = _migrations.LastOrDefault(m => appliedIds.Contains(m.Id))?.Id;
+
                 _logger.LogApplyingMigrations(pending.Count);
                 List<string> completed = [];
                 foreach (var migration in pending)
                 {
+                    if (lastApplied is not null && string.CompareOrdinal(migration.Id, lastApplied) < 0)
+                    {
+                        _logger.LogApplyingOutOfOrder(migration.Id, lastApplied);
+                    }
+
                     _logger.LogApplyingMigration(migration.Id, migration.Description);
                     try
                     {
@@ -134,12 +148,15 @@ public sealed class CosmosMigrationRunner
     /// </summary>
     /// <param name="target">
     ///     The migration ID to roll back to, which itself stays applied; <see langword="null" /> rolls back only the
-    ///     last one. Any ID ordered before the first migration (e.g. <c>"0000"</c>) rolls back everything.
+    ///     last one. Any ID ordered before the first migration (e.g. <c>"0000"</c>) rolls back everything. Like for
+    ///     <see cref="MigrateAsync" />, an EF-style ID can be given by its timestamp or name.
     /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Which migrations were rolled back and, on failure, why the run stopped.</returns>
+    /// <exception cref="ArgumentException"><paramref name="target" /> matches several migrations.</exception>
     public async Task<MigrationResult> RollbackAsync(string? target = null, CancellationToken cancellationToken = default)
     {
+        target = ResolveTarget(_migrations, target);
         if (target is not null)
         {
             _logger.LogRollingBackTo(target);
@@ -211,6 +228,38 @@ public sealed class CosmosMigrationRunner
                 .Select(r => new MigrationState(r.Id, r.Description ?? string.Empty, r.AppliedAt ?? DateTime.MinValue)));
 
         return states;
+    }
+
+    /// <summary>
+    ///     Resolves a target given on the command line to a migration ID: the exact ID, else the one migration whose ID
+    ///     starts with <c>&lt;target&gt;_</c> (the timestamp of an EF-style ID) or ends with <c>_&lt;target&gt;</c> (its
+    ///     name). Anything else is returned unchanged and compared as a string, so <c>0000</c> still means "before all".
+    /// </summary>
+    /// <param name="migrations">All known migrations, ordered.</param>
+    /// <param name="target">The target as given, or <see langword="null" />.</param>
+    /// <returns>The resolved target.</returns>
+    /// <exception cref="ArgumentException">The target matches more than one migration.</exception>
+    internal static string? ResolveTarget(IReadOnlyList<CosmosMigration> migrations, string? target)
+    {
+        if (target is null || migrations.Any(m => m.Id == target))
+        {
+            return target;
+        }
+
+        var matches = migrations
+            .Where(m => m.Id.StartsWith(target + "_", StringComparison.Ordinal)
+                        || m.Id.EndsWith("_" + target, StringComparison.Ordinal))
+            .Select(m => m.Id)
+            .ToList();
+
+        return matches.Count switch
+        {
+            0 => target,
+            1 => matches[0],
+            _ => throw new ArgumentException(
+                $"Target \"{target}\" matches several migrations: {string.Join(", ", matches)}.",
+                nameof(target)),
+        };
     }
 
     /// <summary>Selects the pending migrations to apply, in order.</summary>

@@ -9,25 +9,28 @@ namespace ThorstenSauter.Azure.Cosmos.Migrations.Tool;
 /// </summary>
 internal static partial class MigrationScaffolder
 {
-    private const int MinimumIdWidth = 4;
-
     /// <summary>
-    ///     Computes the next ID after <paramref name="existingIds" />: one more than the highest, zero-padded to the
-    ///     widest existing ID (at least four digits).
+    ///     Creates an EF-style ID, <c>yyyyMMddHHmmss_Name</c> in UTC, which sorts after every migration added earlier
+    ///     and doesn't collide between branches the way a running number does. Older numeric IDs such as <c>0018</c>
+    ///     sort before it.
     /// </summary>
+    /// <param name="now">The current time.</param>
+    /// <param name="name">The normalized migration name.</param>
     /// <param name="existingIds">The IDs of the known migrations.</param>
-    /// <returns>The next ID.</returns>
-    /// <exception cref="ToolException">An existing ID is not a number.</exception>
-    internal static string NextId(IReadOnlyCollection<string> existingIds)
+    /// <returns>The new ID.</returns>
+    /// <exception cref="ToolException">The new ID would not sort after every existing one.</exception>
+    internal static string CreateId(DateTimeOffset now, string name, IReadOnlyCollection<string> existingIds)
     {
-        if (existingIds.FirstOrDefault(id => !id.All(char.IsAsciiDigit)) is { } custom)
+        var id = $"{now.UtcDateTime.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture)}_{name}";
+        var latest = existingIds.Max(StringComparer.Ordinal);
+        if (latest is not null && string.CompareOrdinal(latest, id) >= 0)
         {
-            throw new ToolException($"Existing migration ID \"{custom}\" is not a number; pass --id to choose the new one.");
+            throw new ToolException(
+                $"The new ID \"{id}\" would sort before the existing \"{latest}\", so it would never run in order. " +
+                "Check the system clock, or pass --id.");
         }
 
-        var width = Math.Max(MinimumIdWidth, existingIds.Select(id => id.Length).DefaultIfEmpty(0).Max());
-        var next = existingIds.Select(id => long.Parse(id, CultureInfo.InvariantCulture)).DefaultIfEmpty(0).Max() + 1;
-        return next.ToString(CultureInfo.InvariantCulture).PadLeft(width, '0');
+        return id;
     }
 
     /// <summary>Parses the JSON the executable prints for <c>list</c>.</summary>
@@ -147,6 +150,40 @@ internal static partial class MigrationScaffolder
             .Select(s => IdentifierPattern().IsMatch(s) ? s : "_" + NonIdentifierCharacters().Replace(s, "_"));
 
         return string.Join('.', [rootNamespace, .. segments]);
+    }
+
+    /// <summary>Gets the class name of a migration from its full type name.</summary>
+    /// <param name="typeFullName">The full type name, as <c>list</c> prints it.</param>
+    /// <returns>The class name without namespace.</returns>
+    internal static string ClassNameOf(string typeFullName)
+    {
+        var outer = typeFullName.Split('+')[^1];
+        return outer[(outer.LastIndexOf('.') + 1)..];
+    }
+
+    /// <summary>
+    ///     Finds the source file of a migration: <c>&lt;id&gt;.cs</c> (as <c>add</c> names it) or
+    ///     <c>&lt;ClassName&gt;.cs</c>, anywhere under the project except <c>bin</c> and <c>obj</c>.
+    /// </summary>
+    /// <param name="projectDirectory">The project directory.</param>
+    /// <param name="migration">The migration.</param>
+    /// <returns>The matching files.</returns>
+    internal static List<string> FindSourceFiles(string projectDirectory, ListedMigration migration)
+    {
+        HashSet<string> names = new(StringComparer.OrdinalIgnoreCase)
+        {
+            migration.Id + ".cs",
+            ClassNameOf(migration.Type) + ".cs",
+        };
+
+        return
+        [
+            .. Directory.EnumerateFiles(projectDirectory, "*.cs", SearchOption.AllDirectories)
+                .Where(f => names.Contains(Path.GetFileName(f)))
+                .Where(f => !Path.GetRelativePath(projectDirectory, f)
+                    .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    .Any(segment => segment is "bin" or "obj"))
+        ];
     }
 
     private static string? NamespaceOf(string typeFullName)

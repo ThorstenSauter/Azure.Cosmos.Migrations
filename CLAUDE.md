@@ -13,7 +13,14 @@ ship with the same version:
 - `ThorstenSauter.Azure.Cosmos.Migrations.Tool` (`src/...Tool`): `dotnet cosmos-migrations`. It builds (or takes
   `--assembly`) a migrations project and re-executes `src/...Tool.Exec` (`cosmos-migrations-exec.dll`, shipped under
   `tools/.../exec/`) with `dotnet exec --depsfile <project>.deps.json --runtimeconfig <project>.runtimeconfig.json`.
-  This is the dotnet-ef pattern.
+  This is the dotnet-ef pattern. `bundle` instead generates a host project under the migrations project's `obj/`
+  (`MigrationBundle`) that references it and calls `MigrationsCommandExecutor`, and publishes it as a single file,
+  like `dotnet ef migrations bundle`.
+- Migration IDs from `add` are EF-style, `yyyyMMddHHmmss_Name`, and the class is named after the migration. Targets
+  resolve through `CosmosMigrationRunner.ResolveTarget` (full ID, timestamp or name). Older numeric IDs (`0001`) sort
+  before timestamps and keep working. Never change how IDs sort.
+- The executor writes logs to stderr; stdout carries only command output (`list`, `status --json`), which the tool
+  parses.
 
 It was extracted from [ewlv-website](https://github.com/ThorstenSauter/ewlv-website)'s former `EWLV.DbMigrator`, which
 is its first consumer.

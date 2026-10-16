@@ -39,6 +39,3 @@ internal sealed class M0003ItemsSeedSecond : CosmosMigration
         }
     }
 }
-
-/// <summary>Abstract base classes are not migrations.</summary>
-internal abstract class SampleMigrationBase : CosmosMigration;

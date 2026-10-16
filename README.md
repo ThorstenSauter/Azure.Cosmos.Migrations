@@ -41,20 +41,23 @@ incompatible version of the library: a different major version, or a different m
 
 ### Writing a migration
 
-Scaffold one with the next free ID:
+Scaffold one:
 
 ```bash
 dotnet cosmos-migrations add OrdersAddDeletedAt --project src/MyApp.Migrations
-# Added M0001OrdersAddDeletedAt (0001): src/MyApp.Migrations/Migrations/M0001OrdersAddDeletedAt.cs
+# Added 20261016213045_OrdersAddDeletedAt: src/MyApp.Migrations/Migrations/20261016213045_OrdersAddDeletedAt.cs
 ```
 
-The new file goes next to the latest existing migration, in the same folder and namespace. For the first one it goes
-in `Migrations/`, and `--output-dir <folder>` overrides either. Then fill it in:
+Like EF Core, the ID is a UTC timestamp plus the name, and the class is named after the migration. Two branches that
+each add a migration get different IDs, so they merge without renumbering. The new file goes next to the latest
+existing migration, in the same folder and namespace. For the first one it goes in `Migrations/`, and
+`--output-dir <folder>` overrides either. Made a mistake? `dotnet cosmos-migrations remove` deletes the latest
+migration again, as long as it isn't applied. Then fill it in:
 
 ```csharp
-internal sealed class M0001OrdersAddDeletedAt : CosmosMigration
+internal sealed class OrdersAddDeletedAt : CosmosMigration
 {
-    public override string Id => "0001";
+    public override string Id => "20261016213045_OrdersAddDeletedAt";
 
     public override string Description => "Orders: add DeletedAt";
 
@@ -85,8 +88,11 @@ internal sealed class M0001OrdersAddDeletedAt : CosmosMigration
 A migration needs a parameterless constructor, which may be non-public. The runner gives it `Client`, `DatabaseName`
 and `Database`. `QueryAllAsync` streams query results page by page. Some rules for writing migrations:
 
-- **Keep IDs fixed-width.** Zero-padded numbers such as `0001` sort correctly as strings. Never change or reuse an
-  ID once a migration has been applied anywhere.
+- **IDs sort as strings.** `add`'s timestamps always sort in creation order. Hand-written IDs need a fixed width
+  (`0001`, not `1`). Older zero-padded numbers sort before timestamps, so a project can switch styles without
+  renaming anything. Never change or reuse an ID once a migration has been applied anywhere.
+- **A migration merged late still runs.** If a branch's migration sorts before one that is already applied, `migrate`
+  applies it anyway and logs a warning, so make sure the two don't depend on each other.
 - **Make `UpAsync` safe to run again.** If a migration fails halfway, it isn't recorded, and the next run starts it
   over. Filtering on the state you are changing (`NOT IS_DEFINED(...)` above) is usually enough.
 - **Make `DownAsync` idempotent and narrow.** It should only undo what `UpAsync` did.
@@ -95,12 +101,18 @@ and `Database`. `QueryAllAsync` streams query results page by page. Some rules f
 
 ```bash
 dotnet cosmos-migrations migrate  --project src/MyApp.Migrations --connection-string "<...>" --database mydb
-dotnet cosmos-migrations migrate  --target 0003 ...   # apply up to and including 0003
-dotnet cosmos-migrations rollback ...                 # roll back the most recent migration
-dotnet cosmos-migrations rollback --target 0001 ...   # roll back everything after 0001
-dotnet cosmos-migrations rollback --target 0000 ...   # roll back everything
-dotnet cosmos-migrations status ...                   # applied and pending migrations
+dotnet cosmos-migrations migrate  --target OrdersAddDeletedAt ...  # apply up to and including that migration
+dotnet cosmos-migrations rollback ...                              # roll back the most recent migration
+dotnet cosmos-migrations rollback --target 20261016213045 ...      # roll back everything after that migration
+dotnet cosmos-migrations rollback --target 0000 ...                # roll back everything
+dotnet cosmos-migrations status [--json] ...                       # applied and pending migrations
+dotnet cosmos-migrations list [--json]                             # the project's migrations, without connecting
+dotnet cosmos-migrations remove ...                                # delete the latest migration's file (not applied)
+dotnet cosmos-migrations bundle --runtime linux-x64 --self-contained   # a single executable for deployments
 ```
+
+A `--target` is a migration's full ID or, for an EF-style ID, just its timestamp or its name. `remove` checks the
+database first; pass the connection options, or `--force` to skip the check.
 
 | Option | Meaning |
 |---|---|
@@ -128,12 +140,26 @@ The exit code is `0` on success, `1` when a migration or the connection fails, a
 
 ### In a deployment pipeline
 
-Publish the migrations project with the application, then run the published assembly. That way a release always
-applies exactly the migrations it was built with:
+Build a **bundle** with the release and run it at deployment time. A bundle is one executable holding your
+migrations, their dependencies and the runner, much like `dotnet ef migrations bundle`. The deployment machine needs
+neither the SDK nor the tool, and with `--self-contained` not even a .NET runtime. A release then always applies
+exactly the migrations it was built with:
+
+```bash
+dotnet cosmos-migrations bundle --project src/MyApp.Migrations --runtime linux-x64 --self-contained --output out/
+# later, at deployment time
+./out/cosmos-migrations-bundle migrate --connection-name cosmos-db --database mydb
+```
+
+The bundle takes the same commands and connection options as the tool (`migrate`, `rollback`, `status`, `list`;
+`--help` lists them). `bundle` defaults to the `Release` configuration and the current platform. It can build for
+another one, e.g. `linux-arm64` on Windows. It generates a small host project under the migrations project's `obj/`
+folder and publishes it as a single file.
+
+Without a bundle, publish the project and run the published assembly with the tool instead:
 
 ```bash
 dotnet publish src/MyApp.Migrations -c Release -o out/migrations
-# later, at deployment time
 dotnet tool restore
 dotnet cosmos-migrations migrate --assembly out/migrations/MyApp.Migrations.dll --connection-name cosmos-db --database mydb
 ```
@@ -159,7 +185,7 @@ The runner is an ordinary class if you'd rather host it yourself:
 var runner = new CosmosMigrationRunner(
     cosmosClient,
     new CosmosMigrationOptions { DatabaseName = "mydb" },
-    CosmosMigrationRunner.DiscoverMigrations(typeof(M0001OrdersAddDeletedAt).Assembly),
+    CosmosMigrationRunner.DiscoverMigrations(typeof(OrdersAddDeletedAt).Assembly),
     logger);
 
 var result = await runner.MigrateAsync();
@@ -190,7 +216,8 @@ hold the lease.
 **Running your code.** The tool builds your project (or takes `--assembly`) and starts a small helper with
 `dotnet exec --depsfile <project>.deps.json --runtimeconfig <project>.runtimeconfig.json`. This is the approach
 `dotnet ef` uses. Your migrations and their dependencies load exactly as your application would load them. The
-library package makes sure a class library gets the `runtimeconfig.json` this needs.
+library package makes sure a class library gets the `runtimeconfig.json` this needs. A bundle skips all of this: its
+generated host references your project directly and runs the same command layer.
 
 ## Verifying a package
 

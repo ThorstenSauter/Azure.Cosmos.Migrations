@@ -5,28 +5,58 @@ namespace ThorstenSauter.Azure.Cosmos.Migrations.Tests;
 
 public class MigrationScaffolderTests
 {
+    private static readonly DateTimeOffset Now = new(2026, 10, 16, 21, 30, 45, TimeSpan.FromHours(2));
+
     [Test]
-    public void NextId_NoMigrations_ReturnsFirst()
+    public void CreateId_NoMigrations_IsUtcTimestampAndName()
     {
-        MigrationScaffolder.NextId([]).ShouldBe("0001");
+        MigrationScaffolder.CreateId(Now, "OrdersAddDeletedAt", []).ShouldBe("20261016193045_OrdersAddDeletedAt");
     }
 
     [Test]
-    public void NextId_Existing_IncrementsHighestKeepingWidth()
+    public void CreateId_NumericLegacyIds_SortsAfterThem()
     {
-        MigrationScaffolder.NextId(["0001", "0018", "0002"]).ShouldBe("0019");
+        var id = MigrationScaffolder.CreateId(Now, "OrdersAddDeletedAt", ["0001", "0018"]);
+
+        string.CompareOrdinal(id, "0018").ShouldBeGreaterThan(0);
     }
 
     [Test]
-    public void NextId_WiderIds_KeepsTheirWidth()
+    public void CreateId_LaterExistingId_Throws()
     {
-        MigrationScaffolder.NextId(["000099"]).ShouldBe("000100");
+        Should.Throw<ToolException>(() =>
+            MigrationScaffolder.CreateId(Now, "OrdersAddDeletedAt", ["20261016193046_Newer"]));
     }
 
     [Test]
-    public void NextId_NonNumericId_Throws()
+    [Arguments("App.Migrations.M0001OrdersAdd", "M0001OrdersAdd")]
+    [Arguments("App.OrdersAdd", "OrdersAdd")]
+    [Arguments("NoNamespace", "NoNamespace")]
+    public void ClassNameOf_FullTypeName_ReturnsClassName(string fullName, string expected)
     {
-        Should.Throw<ToolException>(() => MigrationScaffolder.NextId(["0001", "2026-01-add"]));
+        MigrationScaffolder.ClassNameOf(fullName).ShouldBe(expected);
+    }
+
+    [Test]
+    public void FindSourceFiles_ByIdOrClassName_SkipsBinAndObj()
+    {
+        var root = Directory.CreateTempSubdirectory("cosmos-migrations-find-").FullName;
+        try
+        {
+            Touch(root, "20261016193045_OrdersAdd.cs");
+            Touch(root, "Old", "M0001Legacy.cs");
+            Touch(root, "obj", "20261016193045_OrdersAdd.cs");
+            Touch(root, "bin", "Debug", "M0001Legacy.cs");
+
+            MigrationScaffolder.FindSourceFiles(root, new ListedMigration("20261016193045_OrdersAdd", "App.OrdersAdd"))
+                .ShouldBe([Path.Combine(root, "20261016193045_OrdersAdd.cs")]);
+            MigrationScaffolder.FindSourceFiles(root, new ListedMigration("0001", "App.Old.M0001Legacy"))
+                .ShouldBe([Path.Combine(root, "Old", "M0001Legacy.cs")]);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [Test]
@@ -99,10 +129,49 @@ public class MigrationScaffolderTests
     [Test]
     public void Render_Migration_ContainsIdNamespaceAndBase()
     {
-        var source = MigrationScaffolder.Render("App.Migrations", "M0019OrdersAddDeletedAt", "0019", "OrdersAddDeletedAt");
+        var source = MigrationScaffolder.Render(
+            "App.Migrations",
+            "OrdersAddDeletedAt",
+            "20261016193045_OrdersAddDeletedAt",
+            "OrdersAddDeletedAt");
 
         source.ShouldContain("namespace App.Migrations;");
-        source.ShouldContain("internal sealed class M0019OrdersAddDeletedAt : CosmosMigration");
-        source.ShouldContain("public override string Id => \"0019\";");
+        source.ShouldContain("internal sealed class OrdersAddDeletedAt : CosmosMigration");
+        source.ShouldContain("public override string Id => \"20261016193045_OrdersAddDeletedAt\";");
+    }
+
+    [Test]
+    public void IsApplied_StatusJson_ReadsAppliedAt()
+    {
+        const string Json = """[{"id":"0001","description":"a","appliedAt":"2026-01-01T00:00:00Z"},{"id":"0002","description":"b","appliedAt":null}]""";
+
+        Commands.IsApplied(Json, "0001").ShouldBeTrue();
+        Commands.IsApplied(Json, "0002").ShouldBeFalse();
+        Commands.IsApplied(Json, "0003").ShouldBeFalse();
+    }
+
+    [Test]
+    public void RenderProject_Bundle_ReferencesMigrationsAsSingleFile()
+    {
+        var project = MigrationBundle.RenderProject("net11.0", @"C:\src\App.Migrations\App.Migrations.csproj");
+
+        project.ShouldContain("<TargetFramework>net11.0</TargetFramework>");
+        project.ShouldContain("<PublishSingleFile>true</PublishSingleFile>");
+        project.ShouldContain(@"<ProjectReference Include=""C:\src\App.Migrations\App.Migrations.csproj"" />");
+    }
+
+    [Test]
+    [Arguments("win-x64", "cosmos-migrations-bundle.exe")]
+    [Arguments("linux-arm64", "cosmos-migrations-bundle")]
+    public void ExecutableName_Runtime_AddsExeOnWindowsOnly(string runtime, string expected)
+    {
+        MigrationBundle.ExecutableName(runtime).ShouldBe(expected);
+    }
+
+    private static void Touch(params string[] segments)
+    {
+        var path = Path.Combine(segments);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, string.Empty);
     }
 }

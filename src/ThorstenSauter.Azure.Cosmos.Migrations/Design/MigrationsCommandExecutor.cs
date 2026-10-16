@@ -42,6 +42,26 @@ public static class MigrationsCommandExecutor
     private const int Failure = 1;
     private const int UsageError = 2;
 
+    private const string Usage =
+        """
+        Usage: <command> [options]
+
+        Commands:
+          migrate   Apply pending migrations (up to and including --target).
+          rollback  Roll back the last migration (or everything after --target).
+          status    List migrations and whether each is applied (--json for JSON).
+          list      Print the known migrations as JSON, without connecting.
+
+        Options:
+          --target <id>               A migration ID, or an EF-style ID's timestamp or name.
+          --connection-string <value> Or COSMOS_MIGRATIONS_CONNECTION_STRING.
+          --connection-name <name>    Read ConnectionStrings__<name>, as .NET Aspire sets it.
+          --database <name>           Or COSMOS_MIGRATIONS_DATABASE.
+          --container <name>          The records container (default: migrations).
+          --lock-timeout <seconds>    How long to wait for another runner's lease (default: 300).
+          --verbose                   Debug logging.
+        """;
+
     /// <summary>
     ///     Runs the command in <paramref name="args" /> against the migrations in
     ///     <paramref name="migrationsAssembly" />.
@@ -58,6 +78,12 @@ public static class MigrationsCommandExecutor
         ArgumentNullException.ThrowIfNull(migrationsAssembly);
         ArgumentNullException.ThrowIfNull(args);
 
+        if (args.Count > 0 && args[0] is "--help" or "-h" or "help")
+        {
+            Console.WriteLine(Usage);
+            return Success;
+        }
+
         CommandLine command;
         try
         {
@@ -66,12 +92,15 @@ public static class MigrationsCommandExecutor
         catch (ArgumentException ex)
         {
             await Console.Error.WriteLineAsync(ex.Message);
+            await Console.Error.WriteLineAsync(Usage);
             return UsageError;
         }
 
+        // Logs go to standard error, so standard output carries only a command's result (e.g. status --json).
         using var loggerFactory = LoggerFactory.Create(builder => builder
             .SetMinimumLevel(command.Verbose ? LogLevel.Debug : LogLevel.Information)
             .AddFilter("Azure", LogLevel.Warning)
+            .AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace)
             .AddSimpleConsole(o =>
             {
                 o.SingleLine = true;
@@ -130,7 +159,16 @@ public static class MigrationsCommandExecutor
                     return (await runner.RollbackAsync(command.Target, cancellationToken)).Succeeded ? Success : Failure;
 
                 default:
-                    WriteStatus(await runner.GetStatusAsync(cancellationToken));
+                    var states = await runner.GetStatusAsync(cancellationToken);
+                    if (command.Json)
+                    {
+                        await WriteStatusJsonAsync(states, cancellationToken);
+                    }
+                    else
+                    {
+                        WriteStatus(states);
+                    }
+
                     return Success;
             }
         }
@@ -164,6 +202,32 @@ public static class MigrationsCommandExecutor
         await writer.FlushAsync(cancellationToken);
     }
 
+    private static async Task WriteStatusJsonAsync(IReadOnlyList<MigrationState> states, CancellationToken cancellationToken)
+    {
+        await using var stdout = Console.OpenStandardOutput();
+        await using var writer = new Utf8JsonWriter(stdout);
+        writer.WriteStartArray();
+        foreach (var state in states)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("id", state.Id);
+            writer.WriteString("description", state.Description);
+            if (state.AppliedAt is { } appliedAt)
+            {
+                writer.WriteString("appliedAt", DateTime.SpecifyKind(appliedAt, DateTimeKind.Utc));
+            }
+            else
+            {
+                writer.WriteNull("appliedAt");
+            }
+
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+        await writer.FlushAsync(cancellationToken);
+    }
+
     private static void WriteStatus(IReadOnlyList<MigrationState> states)
     {
         if (states.Count == 0)
@@ -190,7 +254,8 @@ public static class MigrationsCommandExecutor
         string? Database,
         string? Container,
         TimeSpan? LockTimeout,
-        bool Verbose)
+        bool Verbose,
+        bool Json)
     {
         private static readonly string[] Commands = ["migrate", "rollback", "status", "list"];
 
@@ -204,6 +269,7 @@ public static class MigrationsCommandExecutor
             string? target = null, connectionString = null, connectionName = null, database = null, container = null;
             TimeSpan? lockTimeout = null;
             var verbose = false;
+            var json = false;
 
             for (var i = 1; i < args.Count; i++)
             {
@@ -233,6 +299,9 @@ public static class MigrationsCommandExecutor
                     case "--verbose":
                         verbose = true;
                         break;
+                    case "--json":
+                        json = true;
+                        break;
                     default:
                         throw new ArgumentException($"Unknown option '{args[i]}'.");
                 }
@@ -243,13 +312,19 @@ public static class MigrationsCommandExecutor
                 throw new ArgumentException($"--target does not apply to '{args[0]}'.");
             }
 
+            // list always prints JSON; status prints a table unless asked for JSON.
+            if (json && args[0] is not ("status" or "list"))
+            {
+                throw new ArgumentException($"--json does not apply to '{args[0]}'.");
+            }
+
             connectionString ??= connectionName is not null
                 ? Environment.GetEnvironmentVariable($"ConnectionStrings__{connectionName}")
                   ?? throw new ArgumentException(
                       $"--connection-name {connectionName}: environment variable ConnectionStrings__{connectionName} is not set.")
                 : Environment.GetEnvironmentVariable(ConnectionStringVariable);
 
-            return new CommandLine(args[0], target, connectionString, database, container, lockTimeout, verbose);
+            return new CommandLine(args[0], target, connectionString, database, container, lockTimeout, verbose, json);
         }
 
         private static string Value(IReadOnlyList<string> args, ref int i) =>

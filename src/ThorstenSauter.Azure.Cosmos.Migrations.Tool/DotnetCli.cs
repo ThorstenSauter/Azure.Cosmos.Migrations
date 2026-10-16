@@ -20,12 +20,19 @@ internal static class DotnetCli
     /// <summary>Runs <c>dotnet</c> with output captured.</summary>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="environment">Extra environment variables for the child.</param>
     /// <returns>The exit code, standard output and standard error.</returns>
     internal static async Task<CapturedRun> CaptureAsync(
         IEnumerable<string> arguments,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? environment = null)
     {
         using var process = new Process { StartInfo = CreateStartInfo(arguments) };
+        foreach (var (name, value) in environment ?? new Dictionary<string, string>())
+        {
+            process.StartInfo.Environment[name] = value;
+        }
+
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
         process.StartInfo.StandardOutputEncoding = Encoding.UTF8;

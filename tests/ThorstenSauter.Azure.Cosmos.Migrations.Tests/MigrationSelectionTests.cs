@@ -56,6 +56,40 @@ public class MigrationSelectionTests
     }
 
     [Test]
+    [Arguments("0002", "0002")]
+    [Arguments("20261016193045", "20261016193045_OrdersAdd")]
+    [Arguments("OrdersAdd", "20261016193045_OrdersAdd")]
+    [Arguments("0000", "0000")]
+    [Arguments(null, null)]
+    public void ResolveTarget_Forms_ResolveToMigrationId(string? target, string? expected)
+    {
+        IReadOnlyList<CosmosMigration> migrations =
+            [new TestMigration("0001"), new TestMigration("0002"), new TestMigration("20261016193045_OrdersAdd")];
+
+        CosmosMigrationRunner.ResolveTarget(migrations, target).ShouldBe(expected);
+    }
+
+    [Test]
+    public void ResolveTarget_AmbiguousName_Throws()
+    {
+        IReadOnlyList<CosmosMigration> migrations =
+            [new TestMigration("20261016193045_Fix"), new TestMigration("20261017080000_Fix")];
+
+        Should.Throw<ArgumentException>(() => CosmosMigrationRunner.ResolveTarget(migrations, "Fix"));
+    }
+
+    [Test]
+    public void SelectPending_TimestampTarget_IncludesTheMigration()
+    {
+        IReadOnlyList<CosmosMigration> migrations =
+            [new TestMigration("0018"), new TestMigration("20261016193045_OrdersAdd"), new TestMigration("20261017080000_Next")];
+        var target = CosmosMigrationRunner.ResolveTarget(migrations, "20261016193045");
+
+        CosmosMigrationRunner.SelectPending(migrations, Applied("0018"), target)
+            .Select(m => m.Id).ShouldBe(["20261016193045_OrdersAdd"]);
+    }
+
+    [Test]
     public void Constructor_UnorderedMigrations_OrdersOrdinally()
     {
         using var client = DummyClient();
