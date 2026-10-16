@@ -58,9 +58,12 @@ internal static class MigrationBundle
                 "target frameworks are not supported.");
         }
 
+        // MSBuild reports the default as "obj\" even on Linux, where a backslash is an ordinary file name character.
         var intermediate = Path.Combine(
             properties.GetValueOrDefault("ProjectDir") ?? Path.GetDirectoryName(projectPath)!,
-            properties.GetValueOrDefault("BaseIntermediateOutputPath") is { Length: > 0 } obj ? obj : "obj");
+            properties.GetValueOrDefault("BaseIntermediateOutputPath") is { Length: > 0 } obj
+                ? obj.Replace('\\', Path.DirectorySeparatorChar)
+                : "obj");
         var hostDirectory = Path.Combine(intermediate, Name);
         if (Directory.Exists(hostDirectory))
         {
