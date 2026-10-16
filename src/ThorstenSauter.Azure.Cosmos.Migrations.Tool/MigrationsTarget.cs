@@ -128,7 +128,7 @@ internal sealed record MigrationsTarget(
         return arguments;
     }
 
-    private static string FindProject(string? project)
+    internal static string FindProject(string? project)
     {
         var path = Path.GetFullPath(project ?? Directory.GetCurrentDirectory());
         if (File.Exists(path))
@@ -150,7 +150,7 @@ internal sealed record MigrationsTarget(
         };
     }
 
-    private static async Task<Dictionary<string, string>> GetPropertiesAsync(
+    internal static async Task<Dictionary<string, string>> GetPropertiesAsync(
         string projectPath,
         string configuration,
         IReadOnlyList<string> names,

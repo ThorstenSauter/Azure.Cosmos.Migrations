@@ -22,6 +22,9 @@ internal static partial class MigrationsLog
     [LoggerMessage(LogLevel.Information, "Applying [{Id}] {Description}")]
     internal static partial void LogApplyingMigration(this ILogger logger, string id, string description);
 
+    [LoggerMessage(LogLevel.Warning, "Applying [{Id}] out of order: the later [{LastApplied}] is already applied")]
+    internal static partial void LogApplyingOutOfOrder(this ILogger logger, string id, string lastApplied);
+
     [LoggerMessage(LogLevel.Information, "Applied  [{Id}]")]
     internal static partial void LogMigrationApplied(this ILogger logger, string id);
 

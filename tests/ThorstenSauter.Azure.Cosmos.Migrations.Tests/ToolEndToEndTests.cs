@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using Shouldly;
 using ThorstenSauter.Azure.Cosmos.Migrations.Tests.Infrastructure;
+using ThorstenSauter.Azure.Cosmos.Migrations.Tool;
 
 namespace ThorstenSauter.Azure.Cosmos.Migrations.Tests;
 
@@ -95,33 +96,137 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
     }
 
     [Test]
-    public async Task Add_Project_WritesNextMigration()
+    public async Task Add_Project_WritesTimestampedMigration()
     {
         // Scaffold into a copy of the sample project so the real one stays untouched.
-        var copy = Path.Combine(Path.GetTempPath(), $"cosmos-migrations-add-{Guid.NewGuid():N}");
+        var copy = CopySample("add");
         try
         {
-            CopyDirectory(Path.GetDirectoryName(SampleProject)!, copy);
             var project = Path.Combine(copy, "SampleMigrations.csproj");
-            RewriteProjectPaths(project);
 
             var add = await RunToolAsync("add", "itemsAddStock", "--project", project, "--configuration", Configuration);
 
             add.ExitCode.ShouldBe(0, add.Output);
-            var file = Path.Combine(copy, "Migrations", "M0004ItemsAddStock.cs");
-            File.Exists(file).ShouldBeTrue(add.Output);
+            var file = Directory.GetFiles(Path.Combine(copy, "Migrations"), "*_ItemsAddStock.cs").ShouldHaveSingleItem();
+            var id = Path.GetFileNameWithoutExtension(file);
+            id.ShouldMatch("^[0-9]{14}_ItemsAddStock$");
             var source = await File.ReadAllTextAsync(file);
             source.ShouldContain("namespace SampleMigrations.Migrations;");
-            source.ShouldContain("public override string Id => \"0004\";");
+            source.ShouldContain("internal sealed class ItemsAddStock : CosmosMigration");
+            source.ShouldContain($"public override string Id => \"{id}\";");
 
-            // The scaffolded file compiles.
-            var build = await RunAsync(["build", project, "--configuration", Configuration, "--nologo"], null);
-            build.ExitCode.ShouldBe(0, build.Output);
+            // The scaffolded file compiles and sorts after the existing numeric IDs.
+            var list = await RunToolCapturingStdoutAsync("list", "--project", project, "--configuration", Configuration, "--json");
+            list.ExitCode.ShouldBe(0, list.Output);
+            MigrationScaffolder.ParseList(list.Output).Select(m => m.Id).ShouldBe(["0001", "0002", "0003", id]);
         }
         finally
         {
             Directory.Delete(copy, recursive: true);
         }
+    }
+
+    [Test]
+    public async Task Remove_LatestNotApplied_DeletesItsFile()
+    {
+        var database = await emulator.CreateDatabaseAsync();
+        var copy = CopySample("remove");
+        try
+        {
+            var project = Path.Combine(copy, "SampleMigrations.csproj");
+            var migrate = await RunToolAsync("migrate", "--project", project, "--configuration", Configuration,
+                "--connection-string", emulator.ConnectionString, "--database", database, "--target", "0002");
+            migrate.ExitCode.ShouldBe(0, migrate.Output);
+
+            var remove = await RunToolAsync("remove", "--project", project, "--configuration", Configuration,
+                "--connection-string", emulator.ConnectionString, "--database", database);
+
+            remove.ExitCode.ShouldBe(0, remove.Output);
+            File.Exists(Path.Combine(copy, "Migrations", "M0003ItemsSeedSecond.cs")).ShouldBeFalse();
+            File.Exists(Path.Combine(copy, "Migrations", "SampleMigrationBase.cs")).ShouldBeTrue();
+        }
+        finally
+        {
+            Directory.Delete(copy, recursive: true);
+        }
+    }
+
+    [Test]
+    public async Task Remove_LatestApplied_RefusesAndKeepsFile()
+    {
+        var database = await emulator.CreateDatabaseAsync();
+        var copy = CopySample("remove-applied");
+        try
+        {
+            var project = Path.Combine(copy, "SampleMigrations.csproj");
+            var migrate = await RunToolAsync("migrate", "--project", project, "--configuration", Configuration,
+                "--connection-string", emulator.ConnectionString, "--database", database);
+            migrate.ExitCode.ShouldBe(0, migrate.Output);
+
+            var remove = await RunToolAsync("remove", "--project", project, "--configuration", Configuration,
+                "--connection-string", emulator.ConnectionString, "--database", database);
+
+            remove.ExitCode.ShouldBe(2);
+            remove.Output.ShouldContain("is applied");
+            File.Exists(Path.Combine(copy, "Migrations", "M0003ItemsSeedSecond.cs")).ShouldBeTrue();
+        }
+        finally
+        {
+            Directory.Delete(copy, recursive: true);
+        }
+    }
+
+    [Test]
+    public async Task Status_Json_ReportsAppliedAndPending()
+    {
+        var database = await emulator.CreateDatabaseAsync();
+        await RunToolAsync("migrate", "--project", SampleProject, "--configuration", Configuration,
+            "--connection-string", emulator.ConnectionString, "--database", database, "--target", "0001");
+
+        var status = await RunToolCapturingStdoutAsync("status", "--project", SampleProject, "--configuration", Configuration,
+            "--connection-string", emulator.ConnectionString, "--database", database, "--json");
+
+        status.ExitCode.ShouldBe(0, status.Output);
+        Commands.IsApplied(status.Output, "0001").ShouldBeTrue();
+        Commands.IsApplied(status.Output, "0002").ShouldBeFalse();
+    }
+
+    [Test]
+    public async Task Bundle_Project_AppliesMigrationsWithoutTheTool()
+    {
+        var database = await emulator.CreateDatabaseAsync();
+        var outputDirectory = Directory.CreateTempSubdirectory("cosmos-migrations-bundle-").FullName;
+        try
+        {
+            // Framework-dependent keeps the test fast; self-contained only adds the runtime.
+            var bundle = await RunToolAsync("bundle", "--project", SampleProject, "--configuration", Configuration,
+                "--output", outputDirectory + Path.DirectorySeparatorChar);
+            bundle.ExitCode.ShouldBe(0, bundle.Output);
+
+            var executable = Path.Combine(
+                outputDirectory,
+                MigrationBundle.ExecutableName(System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier));
+            File.Exists(executable).ShouldBeTrue(bundle.Output);
+
+            var migrate = await RunExecutableAsync(
+                executable,
+                ["migrate", "--connection-string", emulator.ConnectionString, "--database", database]);
+
+            migrate.ExitCode.ShouldBe(0, migrate.Output);
+            migrate.Output.ShouldContain("Applied 3 migration(s)");
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    private static string CopySample(string purpose)
+    {
+        var copy = Path.Combine(Path.GetTempPath(), $"cosmos-migrations-{purpose}-{Guid.NewGuid():N}");
+        CopyDirectory(Path.GetDirectoryName(SampleProject)!, copy);
+        RewriteProjectPaths(Path.Combine(copy, "SampleMigrations.csproj"));
+        return copy;
     }
 
     private static Task<ProcessResult> RunToolAsync(params string[] arguments) => RunToolAsync(arguments, null);
@@ -131,11 +236,24 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
         IReadOnlyDictionary<string, string>? environment) =>
         RunAsync([ToolPath, .. arguments], environment);
 
-    private static async Task<ProcessResult> RunAsync(
-        IEnumerable<string> arguments,
-        IReadOnlyDictionary<string, string>? environment)
+    /// <summary>Runs the tool and returns only its standard output as <see cref="ProcessResult.Output" />.</summary>
+    private static async Task<ProcessResult> RunToolCapturingStdoutAsync(params string[] arguments)
     {
-        var startInfo = new ProcessStartInfo("dotnet")
+        var result = await RunExecutableAsync("dotnet", [ToolPath, .. arguments], null);
+        return result with { Output = result.Stdout };
+    }
+
+    private static Task<ProcessResult> RunAsync(
+        IEnumerable<string> arguments,
+        IReadOnlyDictionary<string, string>? environment) =>
+        RunExecutableAsync("dotnet", arguments, environment);
+
+    private static async Task<ProcessResult> RunExecutableAsync(
+        string fileName,
+        IEnumerable<string> arguments,
+        IReadOnlyDictionary<string, string>? environment = null)
+    {
+        var startInfo = new ProcessStartInfo(fileName)
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -160,10 +278,11 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
         using var process = Process.Start(startInfo)!;
         var stdout = process.StandardOutput.ReadToEndAsync();
         var stderr = process.StandardError.ReadToEndAsync();
-        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         await process.WaitForExitAsync(timeout.Token);
 
-        return new ProcessResult(process.ExitCode, await stdout + await stderr);
+        var output = await stdout;
+        return new ProcessResult(process.ExitCode, output + await stderr, output);
     }
 
     private static string FindRepositoryRoot()
@@ -223,5 +342,5 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
         File.WriteAllText(project, text);
     }
 
-    private sealed record ProcessResult(int ExitCode, string Output);
+    private sealed record ProcessResult(int ExitCode, string Output, string Stdout);
 }
