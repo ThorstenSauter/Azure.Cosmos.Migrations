@@ -12,8 +12,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Runs the tests without any token that can publish: test code and its dependencies never see the OIDC token
+  # that nuget.org trusted publishing exchanges for an API key.
+  test:
+    name: Verify and test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify the tagged commit is on main
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Release tag '$TAG' points at $GITHUB_SHA, which is not on main. Only merged commits are released."
+            exit 1
+          fi
+      - name: Build solution and run tests
+        uses: ThorstenSauter/dotnet-actions/build-and-test@be6b6794832821fbad29da607b6ac88e9c74ffdf # v4.1.0
+
   publish:
     name: Pack and publish to nuget.org
+    needs: test
     runs-on: ubuntu-latest
     environment: nuget
     permissions:
@@ -26,8 +52,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Build solution and run tests
-        uses: ThorstenSauter/dotnet-actions/build-and-test@be6b6794832821fbad29da607b6ac88e9c74ffdf # v4.1.0
       - name: Pack and publish
         uses: ThorstenSauter/dotnet-actions/pack-and-publish@be6b6794832821fbad29da607b6ac88e9c74ffdf # v4.1.0
         with:

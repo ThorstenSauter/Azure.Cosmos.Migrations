@@ -83,9 +83,14 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
 - `build-and-test` builds with `-p:ArtifactsPath=...`, so output paths differ from a local build. Never hard-code
   `bin/<Configuration>` paths: the tool collects the exec through its `ProjectReference` (`OutputItemType`), and the
   tests run the tool from their own output directory.
-- `.github/workflows/release.yml`: on a published GitHub release, it tests again, then runs `pack-and-publish` on
-  the solution, which pushes both packages to nuget.org via trusted publishing (OIDC, `nuget` environment,
-  `NUGET_USER` environment variable). No API key is stored anywhere.
+- `.github/workflows/release.yml`: on a published GitHub release, a `test` job checks that the tagged commit is on
+  `main` and tests again with only `contents: read`. A separate `publish` job then runs `pack-and-publish` on the
+  solution, which pushes both packages to nuget.org via trusted publishing (OIDC, `nuget` environment, which needs
+  a reviewer's approval, `NUGET_USER` environment variable). No API key is stored anywhere. Keep tests and anything
+  else that runs third-party code out of the job holding `id-token: write`.
+- Only the admin can create `v*` tags (the `release tags` ruleset), and releases are immutable.
+- Actions settings require SHA-pinned actions and allow only GitHub-owned actions plus `ThorstenSauter/*`,
+  `NuGet/login` and `danielpalme/ReportGenerator-GitHub-Action`; allow a new third-party action there before using it.
 - The release tag is the package version: `v0.1.0-rc.1` becomes `0.1.0-rc.1`. Use a prerelease suffix while .NET 11
   is itself a prerelease.
 - Release notes are generated from PR labels (`.github/release.yml`). Label every PR.
