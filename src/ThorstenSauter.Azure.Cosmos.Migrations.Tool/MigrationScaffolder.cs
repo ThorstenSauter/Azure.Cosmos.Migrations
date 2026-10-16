@@ -32,11 +32,49 @@ internal static partial class MigrationScaffolder
 
     /// <summary>Parses the JSON the executable prints for <c>list</c>.</summary>
     /// <param name="json">The JSON array.</param>
-    /// <returns>The migration IDs.</returns>
-    internal static List<string> ParseIds(string json)
+    /// <returns>The migrations, in ID order.</returns>
+    internal static List<ListedMigration> ParseList(string json)
     {
         using var document = JsonDocument.Parse(json);
-        return [.. document.RootElement.EnumerateArray().Select(e => e.GetProperty("id").GetString()!)];
+        return
+        [
+            .. document.RootElement.EnumerateArray().Select(e => new ListedMigration(
+                e.GetProperty("id").GetString()!,
+                e.GetProperty("type").GetString() ?? string.Empty))
+        ];
+    }
+
+    /// <summary>
+    ///     Chooses where a new migration goes: <paramref name="outputDirectory" /> when given, else next to the latest
+    ///     existing migration (derived from its namespace below <paramref name="rootNamespace" />), else
+    ///     <c>Migrations</c>.
+    /// </summary>
+    /// <param name="outputDirectory">The folder given on the command line, if any.</param>
+    /// <param name="rootNamespace">The project's root namespace.</param>
+    /// <param name="existing">The existing migrations, in ID order.</param>
+    /// <returns>The folder relative to the project, and the namespace for the new class.</returns>
+    internal static (string Directory, string Namespace) ChooseLocation(
+        string? outputDirectory,
+        string rootNamespace,
+        IReadOnlyList<ListedMigration> existing)
+    {
+        if (outputDirectory is not null)
+        {
+            return (outputDirectory, NamespaceFor(rootNamespace, outputDirectory));
+        }
+
+        var latestNamespace = existing.Count > 0 ? NamespaceOf(existing[^1].Type) : null;
+        if (latestNamespace == rootNamespace)
+        {
+            return (".", rootNamespace);
+        }
+
+        if (latestNamespace is not null && latestNamespace.StartsWith(rootNamespace + ".", StringComparison.Ordinal))
+        {
+            return (latestNamespace[(rootNamespace.Length + 1)..].Replace('.', '/'), latestNamespace);
+        }
+
+        return ("Migrations", NamespaceFor(rootNamespace, "Migrations"));
     }
 
     /// <summary>Validates <paramref name="name" /> and makes it a PascalCase identifier.</summary>
@@ -111,9 +149,22 @@ internal static partial class MigrationScaffolder
         return string.Join('.', [rootNamespace, .. segments]);
     }
 
+    private static string? NamespaceOf(string typeFullName)
+    {
+        // Nested types print as Outer+Inner; the namespace ends at the last dot before any '+'.
+        var outer = typeFullName.Split('+')[0];
+        var dot = outer.LastIndexOf('.');
+        return dot < 0 ? null : outer[..dot];
+    }
+
     [GeneratedRegex("^[A-Za-z_][A-Za-z0-9_]*$")]
     private static partial Regex IdentifierPattern();
 
     [GeneratedRegex("[^A-Za-z0-9_]")]
     private static partial Regex NonIdentifierCharacters();
 }
+
+/// <summary>A migration as the executable lists it.</summary>
+/// <param name="Id">The migration ID.</param>
+/// <param name="Type">The full type name.</param>
+internal sealed record ListedMigration(string Id, string Type);

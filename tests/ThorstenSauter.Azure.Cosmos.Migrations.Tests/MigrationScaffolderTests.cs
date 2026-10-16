@@ -30,10 +30,44 @@ public class MigrationScaffolderTests
     }
 
     [Test]
-    public void ParseIds_ListOutput_ReturnsIds()
+    public void ParseList_ListOutput_ReturnsIdsAndTypes()
     {
-        MigrationScaffolder.ParseIds("""[{"id":"0001","description":"a","type":"X"},{"id":"0002","description":"b","type":"Y"}]""")
-            .ShouldBe(["0001", "0002"]);
+        MigrationScaffolder.ParseList("""[{"id":"0001","description":"a","type":"App.X"},{"id":"0002","description":"b","type":"App.Y"}]""")
+            .ShouldBe([new ListedMigration("0001", "App.X"), new ListedMigration("0002", "App.Y")]);
+    }
+
+    [Test]
+    public void ChooseLocation_ExplicitDirectory_UsesIt()
+    {
+        MigrationScaffolder.ChooseLocation("Data/Migrations", "App", [new ListedMigration("0001", "App.M0001")])
+            .ShouldBe(("Data/Migrations", "App.Data.Migrations"));
+    }
+
+    [Test]
+    public void ChooseLocation_LatestInRootNamespace_UsesProjectRoot()
+    {
+        MigrationScaffolder.ChooseLocation(null, "App", [new ListedMigration("0001", "App.Old.M0001"), new ListedMigration("0002", "App.M0002")])
+            .ShouldBe((".", "App"));
+    }
+
+    [Test]
+    public void ChooseLocation_LatestInSubNamespace_UsesMatchingFolder()
+    {
+        MigrationScaffolder.ChooseLocation(null, "App", [new ListedMigration("0001", "App.Data.Migrations.M0001")])
+            .ShouldBe(("Data/Migrations", "App.Data.Migrations"));
+    }
+
+    [Test]
+    public void ChooseLocation_NoMigrationsYet_DefaultsToMigrationsFolder()
+    {
+        MigrationScaffolder.ChooseLocation(null, "App", []).ShouldBe(("Migrations", "App.Migrations"));
+    }
+
+    [Test]
+    public void ChooseLocation_LatestOutsideRootNamespace_DefaultsToMigrationsFolder()
+    {
+        MigrationScaffolder.ChooseLocation(null, "App", [new ListedMigration("0001", "Other.M0001")])
+            .ShouldBe(("Migrations", "App.Migrations"));
     }
 
     [Test]

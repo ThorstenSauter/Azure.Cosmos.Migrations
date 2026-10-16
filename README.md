@@ -48,7 +48,8 @@ dotnet cosmos-migrations add OrdersAddDeletedAt --project src/MyApp.Migrations
 # Added M0001OrdersAddDeletedAt (0001): src/MyApp.Migrations/Migrations/M0001OrdersAddDeletedAt.cs
 ```
 
-Then fill it in:
+The new file goes next to the latest existing migration, in the same folder and namespace. For the first one it goes
+in `Migrations/`, and `--output-dir <folder>` overrides either. Then fill it in:
 
 ```csharp
 internal sealed class M0001OrdersAddDeletedAt : CosmosMigration

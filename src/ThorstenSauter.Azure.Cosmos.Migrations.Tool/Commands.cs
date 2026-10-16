@@ -111,7 +111,7 @@ internal sealed class Commands
     /// <summary>Add a new migration class with the next ID.</summary>
     /// <param name="name">The migration name, e.g. OrdersAddDeletedAt; the class becomes M&lt;id&gt;&lt;name&gt;.</param>
     /// <param name="project">The project holding the migrations (a .csproj or its directory); the current directory by default.</param>
-    /// <param name="outputDir">The folder, relative to the project, to write the migration to.</param>
+    /// <param name="outputDir">The folder, relative to the project, to write the migration to; next to the latest migration (or Migrations) by default.</param>
     /// <param name="configuration">The build configuration.</param>
     /// <param name="id">Use this ID instead of the next number.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -119,7 +119,7 @@ internal sealed class Commands
     public async Task<int> Add(
         [Argument] string name,
         string? project = null,
-        string outputDir = "Migrations",
+        string? outputDir = null,
         string configuration = "Debug",
         string? id = null,
         CancellationToken cancellationToken = default)
@@ -136,22 +136,26 @@ internal sealed class Commands
                 return list.ExitCode;
             }
 
-            var existing = MigrationScaffolder.ParseIds(list.Output);
-            var newId = id ?? MigrationScaffolder.NextId(existing);
-            if (existing.Contains(newId, StringComparer.Ordinal))
+            var existing = MigrationScaffolder.ParseList(list.Output);
+            var existingIds = existing.Select(m => m.Id).ToList();
+            var newId = id ?? MigrationScaffolder.NextId(existingIds);
+            if (existingIds.Contains(newId, StringComparer.Ordinal))
             {
                 throw new ToolException($"A migration with ID \"{newId}\" already exists.");
             }
 
             var className = MigrationScaffolder.NormalizeName($"M{newId}{normalizedName}");
-            var directory = Path.Combine(target.ProjectDirectory!, outputDir);
+            var (relativeDirectory, namespaceName) = MigrationScaffolder.ChooseLocation(
+                outputDir,
+                target.RootNamespace ?? Path.GetFileNameWithoutExtension(target.AssemblyPath),
+                existing);
+            var directory = Path.GetFullPath(Path.Combine(target.ProjectDirectory!, relativeDirectory));
             var path = Path.Combine(directory, className + ".cs");
             if (File.Exists(path))
             {
                 throw new ToolException($"'{path}' already exists.");
             }
 
-            var namespaceName = MigrationScaffolder.NamespaceFor(target.RootNamespace ?? "Migrations", outputDir);
             Directory.CreateDirectory(directory);
             await File.WriteAllTextAsync(
                 path,
