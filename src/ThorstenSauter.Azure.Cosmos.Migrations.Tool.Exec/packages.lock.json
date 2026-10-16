@@ -151,7 +151,7 @@
         "type": "Project",
         "dependencies": {
           "Azure.Identity": "[1.21.0, )",
-          "Microsoft.Azure.Cosmos": "[3.63.0, )",
+          "Microsoft.Azure.Cosmos": "[3.63.2, )",
           "Microsoft.Extensions.Logging.Console": "[11.0.0-rc.2.26504.105, )",
           "Newtonsoft.Json": "[13.0.4, )"
         }
@@ -167,9 +167,9 @@
       },
       "Microsoft.Azure.Cosmos": {
         "type": "CentralTransitive",
-        "requested": "[3.63.0, )",
-        "resolved": "3.63.0",
-        "contentHash": "FyEhmsAohHiKRMM+66dQriRWgJjkL/99NTFRXW4np6GlIa15pXY1F1lp5z35KNhyWV5oTIInjwdZVyzHD/eKeQ==",
+        "requested": "[3.63.2, )",
+        "resolved": "3.63.2",
+        "contentHash": "7XOKbtu3ghboTMNeIOtY6ULY7Re2xNdhZuyOnWDvA1ye9xnQF8I+4A/rwJdm59wlO1AN0CF2gUBEYSU2208sBA==",
         "dependencies": {
           "Azure.Core": "1.44.1",
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
