@@ -25,7 +25,7 @@ Both target .NET 10 and run on later versions too.
 Create a class library for the migrations, or use an existing project, and reference the library:
 
 ```bash
-dotnet add package ThorstenSauter.Azure.Cosmos.Migrations --prerelease
+dotnet add package ThorstenSauter.Azure.Cosmos.Migrations
 ```
 
 Install the tool, preferably in a [tool manifest](https://learn.microsoft.com/dotnet/core/tools/local-tools-how-to-use)
@@ -33,7 +33,7 @@ so its version is pinned in the repository:
 
 ```bash
 dotnet new tool-manifest   # once per repository
-dotnet tool install ThorstenSauter.Azure.Cosmos.Migrations.Tool --prerelease
+dotnet tool install ThorstenSauter.Azure.Cosmos.Migrations.Tool
 ```
 
 Keep the tool and the package on the same version. The tool refuses to run against a project that references an
