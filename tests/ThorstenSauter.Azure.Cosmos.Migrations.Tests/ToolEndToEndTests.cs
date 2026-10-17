@@ -325,7 +325,7 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
             """
             <Project>
               <PropertyGroup>
-                <TargetFramework>net11.0</TargetFramework>
+                <TargetFramework>net10.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

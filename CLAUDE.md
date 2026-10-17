@@ -46,6 +46,9 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
   type: same major version, and the same minor while on 0.x (`LibraryVersion` in `Tool.Exec/Program.cs`). Anything
   the inner process needs belongs in the library, whose own dependencies (Cosmos SDK, Azure.Identity,
   Logging.Console) reach consumers transitively.
+- **Everything targets the lowest supported .NET (`net10.0`).** The exec runs on the migrations project's runtime,
+  so it can't target a newer framework than any consumer; the tool rolls forward (`RollForward=Major`) and newer
+  consumers use the `net10.0` library. Raise the floor only as a breaking change.
 - **The tool project never references the library.** The outer process stays version-independent of the consumer;
   it only builds, resolves paths and starts `dotnet exec`.
 - `buildTransitive/ThorstenSauter.Azure.Cosmos.Migrations.props` sets `GenerateRuntimeConfigurationFiles`, so class
@@ -91,8 +94,7 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
 - Only the admin can create `v*` tags (the `release tags` ruleset), and releases are immutable.
 - Actions settings require SHA-pinned actions and allow only GitHub-owned actions plus `ThorstenSauter/*`,
   `NuGet/login` and `danielpalme/ReportGenerator-GitHub-Action`; allow a new third-party action there before using it.
-- The release tag is the package version: `v0.1.0-rc.1` becomes `0.1.0-rc.1`. Use a prerelease suffix while .NET 11
-  is itself a prerelease.
+- The release tag is the package version: `v0.1.0-rc.1` becomes `0.1.0-rc.1`.
 - Release notes are generated from PR labels (`.github/release.yml`). Label every PR.
 - Pin third-party actions by full commit SHA with a trailing `# vX.Y.Z` comment.
 - Commit messages use Conventional Commits.
