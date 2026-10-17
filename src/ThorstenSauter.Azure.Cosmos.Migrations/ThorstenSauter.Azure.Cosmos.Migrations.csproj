@@ -18,6 +18,8 @@
     -->
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineVersion>0.1.0</PackageValidationBaselineVersion>
+    <!-- CP0003 rejects an assembly version below the baseline's; CI packs as 0.0.0-ci.N, releases take the tag's version. -->
+    <NoWarn>$(NoWarn);CP0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
