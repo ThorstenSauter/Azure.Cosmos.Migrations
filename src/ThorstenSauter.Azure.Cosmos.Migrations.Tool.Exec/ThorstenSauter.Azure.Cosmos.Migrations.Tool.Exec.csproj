@@ -11,6 +11,8 @@
     <AssemblyName>cosmos-migrations-exec</AssemblyName>
     <RootNamespace>ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec</RootNamespace>
     <IsPackable>false</IsPackable>
+    <!-- Only the DLL ships, so the PDB (Source Link, compiler flags, deterministic build info) travels inside it. -->
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
