@@ -12,8 +12,12 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Checks the package against NuGet's compatibility rules; set PackageValidationBaselineVersion after the first stable release. -->
+    <!--
+      Checks the package against NuGet's compatibility rules and against the last stable release on nuget.org. Raise
+      the baseline after each stable release; a deliberate break until then goes into CompatibilitySuppressions.xml.
+    -->
     <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.1.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
