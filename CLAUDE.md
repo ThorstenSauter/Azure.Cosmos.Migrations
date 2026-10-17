@@ -65,6 +65,9 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
   `Unshipped`, and move to `Shipped` at release time. Removing or changing a shipped entry is a breaking change:
   bump the major version (or the minor while on 0.x) and label the PR `breaking`. A minor bump on 0.x also makes
   older tools refuse the new library, so release both packages together, as the release workflow does.
+  `PackageValidationBaselineVersion` in the library project also compares every pack with the last stable release on
+  nuget.org. A deliberate break fails `dotnet pack`: record it with `-p:ApiCompatGenerateSuppressionFile=true` and
+  commit the `CompatibilitySuppressions.xml`. After each stable release, raise the baseline and delete that file.
 
 ## Packages and dependencies
 

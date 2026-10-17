@@ -12,8 +12,14 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Checks the package against NuGet's compatibility rules; set PackageValidationBaselineVersion after the first stable release. -->
+    <!--
+      Checks the package against NuGet's compatibility rules and against the last stable release on nuget.org. Raise
+      the baseline after each stable release; a deliberate break until then goes into CompatibilitySuppressions.xml.
+    -->
     <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.1.0</PackageValidationBaselineVersion>
+    <!-- CP0003 rejects an assembly version below the baseline's; CI packs as 0.0.0-ci.N, releases take the tag's version. -->
+    <NoWarn>$(NoWarn);CP0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
