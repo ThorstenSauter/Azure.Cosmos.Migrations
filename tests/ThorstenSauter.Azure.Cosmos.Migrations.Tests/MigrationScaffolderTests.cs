@@ -154,12 +154,12 @@ public class MigrationScaffolderTests
     public void RenderProject_Bundle_ReferencesMigrationsAsSingleFile()
     {
         var project = MigrationBundle.RenderProject(
-            "net11.0",
+            "net10.0",
             @"C:\src\App.Migrations\App.Migrations.csproj",
             "linux-arm64",
             selfContained: true);
 
-        project.ShouldContain("<TargetFramework>net11.0</TargetFramework>");
+        project.ShouldContain("<TargetFramework>net10.0</TargetFramework>");
         project.ShouldContain("<PublishSingleFile>true</PublishSingleFile>");
         project.ShouldContain("<RuntimeIdentifier>linux-arm64</RuntimeIdentifier>");
         project.ShouldContain("<SelfContained>true</SelfContained>");

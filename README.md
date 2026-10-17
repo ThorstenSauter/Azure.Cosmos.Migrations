@@ -18,7 +18,7 @@ databases. EF Core migrations don't support the Cosmos DB provider.
 | `ThorstenSauter.Azure.Cosmos.Migrations` | The library your migrations project references |
 | `ThorstenSauter.Azure.Cosmos.Migrations.Tool` | The `dotnet cosmos-migrations` command-line tool |
 
-Both target .NET 11.
+Both target .NET 10 and run on later versions too.
 
 ## Getting started
 
@@ -231,14 +231,14 @@ id=thorstensauter.azure.cosmos.migrations
 version=<version>
 curl -sSLo pkg.nupkg "https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg"
 unzip -q -o pkg.nupkg -d pkg
-gh attestation verify pkg/lib/net11.0/ThorstenSauter.Azure.Cosmos.Migrations.dll \
+gh attestation verify pkg/lib/net10.0/ThorstenSauter.Azure.Cosmos.Migrations.dll \
   --repo ThorstenSauter/Azure.Cosmos.Migrations
 gh attestation verify pkg/_manifest/spdx_3.0/manifest.spdx.json \
   --repo ThorstenSauter/Azure.Cosmos.Migrations
 ```
 
 For the tool, use `id=thorstensauter.azure.cosmos.migrations.tool` and verify
-`pkg/tools/net11.0/any/dotnet-cosmos-migrations.dll` and `pkg/tools/net11.0/any/exec/cosmos-migrations-exec.dll`.
+`pkg/tools/net10.0/any/dotnet-cosmos-migrations.dll` and `pkg/tools/net10.0/any/exec/cosmos-migrations-exec.dll`.
 
 ## Building
 
