@@ -28,10 +28,12 @@
   <ItemGroup>
     <!--
       The tool itself never loads the library: it re-executes cosmos-migrations-exec inside the migrations project's
-      dependency context. Build the executable first and ship only its DLL under exec/.
+      dependency context. Build the executable first and ship only its DLL under exec/. Private="false" keeps its
+      copy-to-output files (apphost, deps.json, runtimeconfig.json, the Cosmos SDK's native DLLs) out of the tool.
     -->
     <ProjectReference Include="../ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec/ThorstenSauter.Azure.Cosmos.Migrations.Tool.Exec.csproj"
                       ReferenceOutputAssembly="false"
+                      Private="false"
                       OutputItemType="ExecAssembly" />
   </ItemGroup>
 
