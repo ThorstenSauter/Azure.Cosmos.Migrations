@@ -16,7 +16,7 @@ jobs:
   # that nuget.org trusted publishing exchanges for an API key.
   test:
     name: Verify and test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     permissions:
       contents: read
     timeout-minutes: 20
@@ -40,7 +40,7 @@ jobs:
   publish:
     name: Pack and publish to nuget.org
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     environment: nuget
     permissions:
       contents: read
