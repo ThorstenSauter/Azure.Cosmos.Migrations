@@ -18,14 +18,11 @@ public sealed class CosmosEmulator : IAsyncInitializer, IAsyncDisposable
     private const ushort GatewayPort = 8081;
     private const ushort HealthPort = 8080;
 
-    private readonly IContainer _container = new ContainerBuilder("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest")
-        .WithPortBinding(GatewayPort, assignRandomHostPort: true)
-        .WithPortBinding(HealthPort, assignRandomHostPort: true)
-        .WithWaitStrategy(Wait.ForUnixContainer()
-            .UntilHttpRequestIsSucceeded(request => request.ForPort(HealthPort).ForPath("/ready")))
-        .Build();
-
     private CosmosClient? _client;
+
+    // Built in InitializeAsync, not in a field initializer: Build() pings Docker, and TUnit constructs this
+    // fixture even when [RequiresEmulator] skips the tests, so it would fail wherever Docker isn't reachable.
+    private IContainer? _container;
 
     /// <summary>Gets the key-based connection string.</summary>
     public string ConnectionString { get; private set; } = string.Empty;
@@ -41,6 +38,12 @@ public sealed class CosmosEmulator : IAsyncInitializer, IAsyncDisposable
             return;
         }
 
+        _container = new ContainerBuilder("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest")
+            .WithPortBinding(GatewayPort, assignRandomHostPort: true)
+            .WithPortBinding(HealthPort, assignRandomHostPort: true)
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilHttpRequestIsSucceeded(request => request.ForPort(HealthPort).ForPath("/ready")))
+            .Build();
         await _container.StartAsync();
         ConnectionString =
             $"AccountEndpoint=http://{_container.Hostname}:{_container.GetMappedPublicPort(GatewayPort)}/;AccountKey={WellKnownKey};";
@@ -60,6 +63,9 @@ public sealed class CosmosEmulator : IAsyncInitializer, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _client?.Dispose();
-        await _container.DisposeAsync();
+        if (_container is not null)
+        {
+            await _container.DisposeAsync();
+        }
     }
 }
