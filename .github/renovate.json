@@ -2,5 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>ThorstenSauter/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "description": "The workflow lockfile (.github/workflows/actions.lock) holds the commit SHAs, so keep version tags in the workflows instead of pinning digests",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "pinDigests": false
+    }
   ]
 }
