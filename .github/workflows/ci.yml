@@ -37,7 +37,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build solution and run tests
-        uses: ThorstenSauter/dotnet-actions/build-and-test@v4.3.0
+        uses: ThorstenSauter/dotnet-actions/build-and-test@v4.3.1
 
   format:
     name: Check formatting
@@ -69,7 +69,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Pack without publishing
-        uses: ThorstenSauter/dotnet-actions/pack-and-publish@v4.3.0
+        uses: ThorstenSauter/dotnet-actions/pack-and-publish@v4.3.1
         with:
           # The solution packs both packages: the library and the tool.
           project-path: 'Azure.Cosmos.Migrations.slnx'
