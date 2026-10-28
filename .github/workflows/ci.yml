@@ -33,11 +33,11 @@ jobs:
       COSMOS_EMULATOR_TESTS: ${{ matrix.emulator-tests }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Build solution and run tests
-        uses: ThorstenSauter/dotnet-actions/build-and-test@d65e41e3be431cff9c0f910749b5fdc9203a297d # v4.3.0
+        uses: ThorstenSauter/dotnet-actions/build-and-test@v4.3.0
 
   format:
     name: Check formatting
@@ -47,11 +47,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@v6.0.0
         with:
           global-json-file: global.json
       - name: Verify formatting
@@ -65,11 +65,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Pack without publishing
-        uses: ThorstenSauter/dotnet-actions/pack-and-publish@d65e41e3be431cff9c0f910749b5fdc9203a297d # v4.3.0
+        uses: ThorstenSauter/dotnet-actions/pack-and-publish@v4.3.0
         with:
           # The solution packs both packages: the library and the tool.
           project-path: 'Azure.Cosmos.Migrations.slnx'
@@ -89,7 +89,7 @@ jobs:
       GH_ACTIONS_LOCK_VERSION: v0.4.0
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Install gh-actions-lock
