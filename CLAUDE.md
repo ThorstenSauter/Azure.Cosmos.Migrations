@@ -103,5 +103,5 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
 - Workflows reference actions by full version tag (`@v7.0.1`), not by SHA. `.github/workflows/actions.lock`
   (`gh actions-lock`) holds the commit SHAs for those and for the actions `dotnet-actions` uses internally, and the
   runner runs only the locked commits. After adding a workflow or changing a `uses:` line, run `gh actions-lock` and
-  commit the lockfile. The `actions-lock` CI job runs `gh actions-lock --verify`.
+  commit the lockfile.
 - Commit messages use Conventional Commits.
