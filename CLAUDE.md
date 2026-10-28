@@ -78,7 +78,7 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
   `pack-and-publish` attests it with the DLLs.
 - `NuGet.config` maps everything to nuget.org; neither package may depend on a private feed.
 - Renovate (`.github/renovate.json`, extending `local>ThorstenSauter/renovate-config`) updates packages, the SDK in
-  `global.json`, and the SHA-pinned actions.
+  `global.json`, and the actions, regenerating `.github/workflows/actions.lock` with each action update.
 
 ## CI and releases
 
@@ -95,9 +95,13 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
   a reviewer's approval, `NUGET_USER` environment variable). No API key is stored anywhere. Keep tests and anything
   else that runs third-party code out of the job holding `id-token: write`.
 - Only the admin can create `v*` tags (the `release tags` ruleset), and releases are immutable.
-- Actions settings require SHA-pinned actions and allow only GitHub-owned actions plus `ThorstenSauter/*`,
-  `NuGet/login` and `danielpalme/ReportGenerator-GitHub-Action`; allow a new third-party action there before using it.
+- Actions settings allow only GitHub-owned actions plus `ThorstenSauter/*`, `NuGet/login` and
+  `danielpalme/ReportGenerator-GitHub-Action`; allow a new third-party action there before using it. A **Require
+  lockfile** policy (Settings → Actions → Policies) blocks any workflow whose actions aren't in the lockfile.
 - The release tag is the package version: `v0.1.0-rc.1` becomes `0.1.0-rc.1`.
 - Release notes are generated from PR labels (`.github/release.yml`). Label every PR.
-- Pin third-party actions by full commit SHA with a trailing `# vX.Y.Z` comment.
+- Workflows reference actions by full version tag (`@v7.0.1`), not by SHA. `.github/workflows/actions.lock`
+  (`gh actions-lock`) holds the commit SHAs for those and for the actions `dotnet-actions` uses internally, and the
+  runner runs only the locked commits. After adding a workflow or changing a `uses:` line, run `gh actions-lock` and
+  commit the lockfile.
 - Commit messages use Conventional Commits.

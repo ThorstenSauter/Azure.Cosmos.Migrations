@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -35,7 +35,7 @@ jobs:
             exit 1
           fi
       - name: Build solution and run tests
-        uses: ThorstenSauter/dotnet-actions/build-and-test@d65e41e3be431cff9c0f910749b5fdc9203a297d # v4.3.0
+        uses: ThorstenSauter/dotnet-actions/build-and-test@v4.3.0
 
   publish:
     name: Pack and publish to nuget.org
@@ -49,11 +49,11 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Pack and publish
-        uses: ThorstenSauter/dotnet-actions/pack-and-publish@d65e41e3be431cff9c0f910749b5fdc9203a297d # v4.3.0
+        uses: ThorstenSauter/dotnet-actions/pack-and-publish@v4.3.0
         with:
           # The solution packs both packages, which always ship with the same version.
           project-path: 'Azure.Cosmos.Migrations.slnx'
