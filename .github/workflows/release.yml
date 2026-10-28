@@ -35,7 +35,7 @@ jobs:
             exit 1
           fi
       - name: Build solution and run tests
-        uses: ThorstenSauter/dotnet-actions/build-and-test@v4.3.0
+        uses: ThorstenSauter/dotnet-actions/build-and-test@v4.3.1
 
   publish:
     name: Pack and publish to nuget.org
@@ -53,7 +53,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Pack and publish
-        uses: ThorstenSauter/dotnet-actions/pack-and-publish@v4.3.0
+        uses: ThorstenSauter/dotnet-actions/pack-and-publish@v4.3.1
         with:
           # The solution packs both packages, which always ship with the same version.
           project-path: 'Azure.Cosmos.Migrations.slnx'

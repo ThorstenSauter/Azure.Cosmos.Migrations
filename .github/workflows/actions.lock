@@ -6,10 +6,10 @@ workflows:
     '.github/workflows/ci.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-dotnet@v6.0.0'
-        - 'thorstensauter/dotnet-actions@v4.3.0'
+        - 'thorstensauter/dotnet-actions@v4.3.1'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
-        - 'thorstensauter/dotnet-actions@v4.3.0'
+        - 'thorstensauter/dotnet-actions@v4.3.1'
 dependencies:
     'actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6':
         ref: 'v4.2.2'
@@ -51,9 +51,9 @@ dependencies:
         commit: 'sha1-8d196754b4036150537f80ac539e15c2f1028841'
         owner_id: 968310
         repo_id: 1037624552
-    'thorstensauter/dotnet-actions@v4.3.0':
-        ref: 'v4.3.0'
-        commit: 'sha1-d65e41e3be431cff9c0f910749b5fdc9203a297d'
+    'thorstensauter/dotnet-actions@v4.3.1':
+        ref: 'v4.3.1'
+        commit: 'sha1-f643f68f562c38e15ff461fea32d45d0c0505131'
         owner_id: 43311536
         repo_id: 910918123
         uses:
