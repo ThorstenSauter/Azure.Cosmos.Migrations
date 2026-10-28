@@ -76,13 +76,38 @@ jobs:
           publish: 'false'
           version: '0.0.0-ci.${{ github.run_number }}'
 
+  # Fails if `.github/workflows/actions.lock` is missing an action (direct or transitive) or the runner would reject a
+  # pin. After changing a `uses:` line, run `gh actions-lock` locally and commit the lockfile.
+  actions-lock:
+    name: Verify actions lockfile
+    runs-on: ubuntu-26.04-arm
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    env:
+      # renovate: datasource=github-releases depName=github/gh-actions-lock
+      GH_ACTIONS_LOCK_VERSION: v0.4.0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install gh-actions-lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh extension install github/gh-actions-lock --pin "$GH_ACTIONS_LOCK_VERSION"
+      - name: Verify lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh actions-lock --verify --no-interactive
+
   # The only check the "main" ruleset requires, so new jobs only need adding to `needs`.
   # `always()` matters: without it a failed dependency would skip this job too, and GitHub counts a
   # skipped required check as passed.
   checks-passed:
     name: CI passed
     runs-on: ubuntu-26.04-arm
-    needs: [ build, format, pack ]
+    needs: [ build, format, pack, actions-lock ]
     if: always()
     timeout-minutes: 5
     steps:

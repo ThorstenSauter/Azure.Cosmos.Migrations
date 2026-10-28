@@ -100,4 +100,7 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
 - The release tag is the package version: `v0.1.0-rc.1` becomes `0.1.0-rc.1`.
 - Release notes are generated from PR labels (`.github/release.yml`). Label every PR.
 - Pin third-party actions by full commit SHA with a trailing `# vX.Y.Z` comment.
+- `.github/workflows/actions.lock` (`gh actions-lock`) locks every action, including those that `dotnet-actions`
+  uses internally. After changing a `uses:` line, run `gh actions-lock`; it replaces SHA pins with tags, so restore
+  the pins before committing. The `actions-lock` job in CI runs `gh actions-lock --verify`.
 - Commit messages use Conventional Commits.
