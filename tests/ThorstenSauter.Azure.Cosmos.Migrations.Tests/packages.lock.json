@@ -45,15 +45,15 @@
       },
       "TUnit": {
         "type": "Direct",
-        "requested": "[1.78.0, )",
-        "resolved": "1.78.0",
-        "contentHash": "yLPLl7476F8UNSG3pZtI3XL7Va8HfpbdTkMEqlB/bbBt2GM1kYuCsUdVouZDa3iiK25QBNQKw20fcE09pWMAKQ==",
+        "requested": "[1.79.0, )",
+        "resolved": "1.79.0",
+        "contentHash": "ebsQAglZziZsPp0CSMEV5W/oyw37ZfJL2lYbH0oghzFdhCwi45yWeuyylFq98Fdris3tkeBBLM4feYKAnH8NqQ==",
         "dependencies": {
           "Microsoft.Testing.Extensions.CodeCoverage": "18.12.0",
           "Microsoft.Testing.Extensions.Telemetry": "2.5.2",
           "Microsoft.Testing.Extensions.TrxReport": "2.5.2",
-          "TUnit.Assertions": "1.78.0",
-          "TUnit.Engine": "1.78.0"
+          "TUnit.Assertions": "1.79.0",
+          "TUnit.Engine": "1.79.0"
         }
       },
       "Azure.Core": {
@@ -456,23 +456,23 @@
       },
       "TUnit.Assertions": {
         "type": "Transitive",
-        "resolved": "1.78.0",
-        "contentHash": "5LFBA5Nh18RumRWbP1Y+b8QBqXuPyJ61f2HEJpZRCwpeD5n4uQCvTQ5TwE8RQq70wdTVR0ee0EYr6KVPJWm2sg=="
+        "resolved": "1.79.0",
+        "contentHash": "1OrdCTsprnWGQLI6s+onu0ckv7/3ebIA1tGL3f2MTVY6OlsOkTnq/QK8f2n6iMjAyvYvtYICL4AlV+JGip0PNQ=="
       },
       "TUnit.Core": {
         "type": "Transitive",
-        "resolved": "1.78.0",
-        "contentHash": "fnxSKTVKvfLkdXvirCEKmpDuZTp2Xc8Sf7SCN7KpMVSkINqeSorhgl8KN3LNFzx+llCLutlIDrGk9fMbVv+mGg=="
+        "resolved": "1.79.0",
+        "contentHash": "klsTIBDAbzkuqz8ZlfKmp2PYSDmOTIO58fWrEfo6FzVkHyiXJ/TZzUbs3g5FpUjAaMMnYMP+UtyxiABXHwWl4A=="
       },
       "TUnit.Engine": {
         "type": "Transitive",
-        "resolved": "1.78.0",
-        "contentHash": "gBQDHLEa6wugoqMTa7H5TD8V0EX0+BSL1I6L8BVX/982Gtdwdb4iOHXtfaozGUsr2u+tbWs+qf0GNvCLkLbulQ==",
+        "resolved": "1.79.0",
+        "contentHash": "eF2to+9wudv4giqvEL4MAHE05itfpWs0ddkiuPkxcPluFmM0o0BAPUEqA0bdbHRqrTdHIByahgKcqb6eUEVeBw==",
         "dependencies": {
           "Microsoft.Testing.Extensions.TrxReport.Abstractions": "2.5.2",
           "Microsoft.Testing.Platform": "2.5.2",
           "Microsoft.Testing.Platform.MSBuild": "2.5.2",
-          "TUnit.Core": "1.78.0"
+          "TUnit.Core": "1.79.0"
         }
       },
       "samplemigrations": {
@@ -485,7 +485,7 @@
         "type": "Project",
         "dependencies": {
           "Azure.Identity": "[1.21.0, )",
-          "Microsoft.Azure.Cosmos": "[3.63.3, )",
+          "Microsoft.Azure.Cosmos": "[3.63.4, )",
           "Microsoft.Extensions.Logging.Console": "[10.0.14, )",
           "Newtonsoft.Json": "[13.0.4, )"
         }
@@ -504,9 +504,9 @@
       },
       "Microsoft.Azure.Cosmos": {
         "type": "CentralTransitive",
-        "requested": "[3.63.3, )",
-        "resolved": "3.63.3",
-        "contentHash": "my9N2y0NAkVYIAqmF2FsHSTdo0sAcZTV2H9gM0nmwqjxKo6yar+jW0GG2JOtxAxqFx5eRPlOIq+CJjCzZ4/TYA==",
+        "requested": "[3.63.4, )",
+        "resolved": "3.63.4",
+        "contentHash": "P4lbLiYd4pTdN54PVBd5OG3viVSX+jxCPY7s8QjdDGVFwTu+NwSDyEpshbWSbL/dYVmpvuZ0hasZHVEUh6VMWw==",
         "dependencies": {
           "Azure.Core": "1.44.1",
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
