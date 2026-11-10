@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
-    <PackageVersion Include="ConsoleAppFramework" Version="5.8.0" />
+    <PackageVersion Include="ConsoleAppFramework" Version="5.8.1" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.64.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.14" />
@@ -17,6 +17,6 @@
     <PackageVersion Include="Sbom" Version="0.3.1" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Testcontainers" Version="4.16.0" />
-    <PackageVersion Include="TUnit" Version="1.81.0" />
+    <PackageVersion Include="TUnit" Version="1.81.10" />
   </ItemGroup>
 </Project>

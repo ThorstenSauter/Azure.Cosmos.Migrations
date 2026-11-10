@@ -4,9 +4,9 @@
     "net10.0": {
       "ConsoleAppFramework": {
         "type": "Direct",
-        "requested": "[5.8.0, )",
-        "resolved": "5.8.0",
-        "contentHash": "3N4YAAIC3MYJ9xkI392ajfb77cd9tBW2nWPdaAiojdK3CmBdZuUOCEgWgx8QyiHwDNqkPCtek+cZOmonucge3w=="
+        "requested": "[5.8.1, )",
+        "resolved": "5.8.1",
+        "contentHash": "uvybXbCCxIbgMiu9QUISy34nsgfVI2r98S8jSwd1+6qBoNDJLyiRaO1GjNjzJqkDyydn4yKE1XBPzdsylsDbpQ=="
       },
       "Sbom": {
         "type": "Direct",
