@@ -3,6 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
+    <!-- Runs the suite on the lowest supported runtime and on the newest. The packages themselves still target only
+         net10.0 (Directory.Build.props), and SampleMigrations stays single-targeted because the tool rejects
+         migrations projects with several target frameworks. -->
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <!-- Directory.Build.props sets TargetFramework, which would otherwise make this a single-targeted build. -->
+    <TargetFramework></TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

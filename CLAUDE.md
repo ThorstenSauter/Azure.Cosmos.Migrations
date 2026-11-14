@@ -48,7 +48,10 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
   Logging.Console) reach consumers transitively.
 - **Everything targets the lowest supported .NET (`net10.0`).** The exec runs on the migrations project's runtime,
   so it can't target a newer framework than any consumer; the tool rolls forward (`RollForward=Major`) and newer
-  consumers use the `net10.0` library. Raise the floor only as a breaking change.
+  consumers use the `net10.0` library. Raise the floor only as a breaking change. Only the test project
+  multi-targets (`net10.0;net11.0`), to test on the newest runtime too; CI installs .NET 10 next to the
+  `global.json` SDK for it. `SampleMigrations` stays single-targeted (the tool rejects multi-targeted projects), and
+  `Migrate_Net11Project_RunsTheExecOnNet11` covers a net11 consumer by rewriting a copy's target framework.
 - **The tool project never references the library.** The outer process stays version-independent of the consumer;
   it only builds, resolves paths and starts `dotnet exec`.
 - `buildTransitive/ThorstenSauter.Azure.Cosmos.Migrations.props` sets `GenerateRuntimeConfigurationFiles`, so class
@@ -78,7 +81,9 @@ dotnet pack Azure.Cosmos.Migrations.slnx -c Release -o artifacts/pkg -p:Version=
   `pack-and-publish` attests it with the DLLs.
 - `NuGet.config` maps everything to nuget.org; neither package may depend on a private feed.
 - Renovate (`.github/renovate.json`, extending `local>ThorstenSauter/renovate-config`) updates packages, the SDK in
-  `global.json`, and the actions, regenerating `.github/workflows/actions.lock` with each action update.
+  `global.json`, and the actions, regenerating `.github/workflows/actions.lock` with each action update. Major
+  updates of `Microsoft.Extensions.*` are disabled: they reach consumers transitively, so they follow the `net10.0`
+  floor, not the SDK.
 
 ## CI and releases
 

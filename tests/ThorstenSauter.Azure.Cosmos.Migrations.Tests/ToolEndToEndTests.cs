@@ -86,6 +86,34 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
     }
 
     [Test]
+    public async Task Migrate_Net11Project_RunsTheExecOnNet11()
+    {
+        // The exec runs on the migrations project's runtime, so a net11.0 consumer runs it on .NET 11 while the
+        // packages target net10.0.
+        var database = await emulator.CreateDatabaseAsync();
+        var copy = CopySample("net11", "net11.0");
+        try
+        {
+            var project = Path.Combine(copy, "SampleMigrations.csproj");
+
+            var migrate = await RunToolAsync("migrate", "--project", project, "--configuration", Configuration,
+                "--connection-string", emulator.ConnectionString, "--database", database);
+
+            migrate.ExitCode.ShouldBe(0, migrate.Output);
+            migrate.Output.ShouldContain("Applied 3 migration(s)");
+            // The exec ran with this runtimeconfig, which asks for the .NET 11 runtime.
+            var runtimeConfig = Directory
+                .GetFiles(copy, "SampleMigrations.runtimeconfig.json", SearchOption.AllDirectories)
+                .ShouldHaveSingleItem();
+            (await File.ReadAllTextAsync(runtimeConfig)).ShouldContain("\"version\": \"11.0.");
+        }
+        finally
+        {
+            Directory.Delete(copy, recursive: true);
+        }
+    }
+
+    [Test]
     public async Task Migrate_MissingDatabaseOption_FailsWithUsageError()
     {
         var migrate = await RunToolAsync("migrate", "--project", SampleProject, "--configuration", Configuration,
@@ -221,10 +249,10 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
         }
     }
 
-    private static string CopySample(string purpose)
+    private static string CopySample(string purpose, string targetFramework = "net10.0")
     {
         var copy = Path.Combine(Path.GetTempPath(), $"cosmos-migrations-{purpose}-{Guid.NewGuid():N}");
-        CopyDirectory(Path.GetDirectoryName(SampleProject)!, copy);
+        CopyDirectory(Path.GetDirectoryName(SampleProject)!, copy, targetFramework);
         RewriteProjectPaths(Path.Combine(copy, "SampleMigrations.csproj"));
         return copy;
     }
@@ -296,7 +324,7 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
         return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");
     }
 
-    private static void CopyDirectory(string source, string destination)
+    private static void CopyDirectory(string source, string destination, string targetFramework)
     {
         foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
         {
@@ -322,10 +350,10 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
 
         File.WriteAllText(
             Path.Combine(destination, "Directory.Build.props"),
-            """
+            $"""
             <Project>
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>{targetFramework}</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
