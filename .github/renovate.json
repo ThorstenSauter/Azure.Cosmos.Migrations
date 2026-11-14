@@ -2,5 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>ThorstenSauter/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "description": "The library targets net10.0 and its Microsoft.Extensions.* dependencies reach consumers transitively, so a major update would force net10 consumers onto the next release's packages. Take majors only when the net10.0 floor is raised.",
+      "matchDatasources": ["nuget"],
+      "matchPackageNames": ["Microsoft.Extensions.**"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
   ]
 }

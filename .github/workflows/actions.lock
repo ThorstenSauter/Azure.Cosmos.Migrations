@@ -9,6 +9,7 @@ workflows:
         - 'thorstensauter/dotnet-actions@v4.3.3'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
+        - 'actions/setup-dotnet@v6.1.0'
         - 'thorstensauter/dotnet-actions@v4.3.3'
 dependencies:
     'actions/attest@v4.2.2':
