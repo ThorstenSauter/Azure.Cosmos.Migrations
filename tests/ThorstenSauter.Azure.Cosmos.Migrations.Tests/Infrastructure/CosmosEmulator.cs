@@ -18,10 +18,12 @@ public sealed class CosmosEmulator : IAsyncInitializer, IAsyncDisposable
     private const ushort GatewayPort = 8081;
     private const ushort HealthPort = 8080;
 
-    // Pinned by digest: vnext-latest and even the dated tags are moved to new builds. The 2026-11-21 build answers a
-    // create of an existing id with 500 ("cannot drop portal ...") instead of 409 Conflict, which breaks the lease.
+    // Pinned by digest, which Docker uses over the tag: vnext-latest (and even the dated tags) move to new builds.
+    // Renovate proposes each new vnext-latest digest (.github/renovate.json), and that PR's CI tests it. The digest is
+    // the 2026-11-17 build (vnext-EN20261117pre); the 2026-11-21 build answers a create of an existing id with 500
+    // ("cannot drop portal ...") instead of 409 Conflict, which breaks the lease.
     private const string Image =
-        "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-EN20261117pre@sha256:11b42b669436fbbe00b33a58e9317dcc9f0cb23ed3196b0cbb1860e26527352c";
+        "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest@sha256:11b42b669436fbbe00b33a58e9317dcc9f0cb23ed3196b0cbb1860e26527352c";
 
     private CosmosClient? _client;
 
