@@ -10,9 +10,9 @@
       },
       "Sbom": {
         "type": "Direct",
-        "requested": "[0.3.1, )",
-        "resolved": "0.3.1",
-        "contentHash": "43Kz2zV8ZPhxCUWwr+JelyryFNJ0DQv3qAVDb0cdJ/+milhN0ooietO97GjZMsbCWSLBvg1JiXvavAc4H6Suhg=="
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "cLksebs1m+QE4DNhe2Mk/prvPkaWW4Eu2DFG59LehJMEG2PJj3gd6ic97MvBpM5ytQPSOKn0sTyhPVKKfEc3cQ=="
       }
     }
   }
