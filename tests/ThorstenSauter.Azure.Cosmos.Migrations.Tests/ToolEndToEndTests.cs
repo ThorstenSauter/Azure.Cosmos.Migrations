@@ -224,10 +224,16 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
     {
         var database = await emulator.CreateDatabaseAsync();
         var outputDirectory = Directory.CreateTempSubdirectory("cosmos-migrations-bundle-").FullName;
+
+        // A copy, because the bundle host is generated under the project's obj/: the net10.0 and net11.0 test runs
+        // execute in parallel, and [NotInParallel] only orders the tests within one of them.
+        var copy = CopySample("bundle");
         try
         {
+            var project = Path.Combine(copy, "SampleMigrations.csproj");
+
             // Framework-dependent keeps the test fast; self-contained only adds the runtime.
-            var bundle = await RunToolAsync("bundle", "--project", SampleProject, "--configuration", Configuration,
+            var bundle = await RunToolAsync("bundle", "--project", project, "--configuration", Configuration,
                 "--output", outputDirectory + Path.DirectorySeparatorChar);
             bundle.ExitCode.ShouldBe(0, bundle.Output);
 
@@ -246,6 +252,7 @@ public class ToolEndToEndTests(CosmosEmulator emulator)
         finally
         {
             Directory.Delete(outputDirectory, recursive: true);
+            Directory.Delete(copy, recursive: true);
         }
     }
 
