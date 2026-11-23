@@ -3,6 +3,15 @@
   "extends": [
     "local>ThorstenSauter/renovate-config"
   ],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/__fixtures__/**"
+  ],
   "customManagers": [
     {
       "description": "The Cosmos DB emulator image the tests run, pinned by digest in a C# string. Every new vnext-latest digest becomes a PR, whose CI tests it before it is taken.",
