@@ -23,7 +23,7 @@ public sealed class CosmosEmulator : IAsyncInitializer, IAsyncDisposable
     // the 2026-11-17 build (vnext-EN20261117pre); the 2026-11-21 build answers a create of an existing id with 500
     // ("cannot drop portal ...") instead of 409 Conflict, which breaks the lease.
     private const string Image =
-        "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest@sha256:e2b2c3ca0b99b256ff0781518714592a0f54fefc30d76d70a450d65ead3c96cb";
+        "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest@sha256:c274ac17c19a5f74dbadbc99f259bc49a8640a03f6789f54d7f76cbfc33ff6b6";
 
     private CosmosClient? _client;
 
